@@ -3,6 +3,7 @@
 <script lang="ts">
 	import Cell from '$lib/components/Cell.svelte';
 	import { parse } from '$lib/util';
+	import { Button } from 'flowbite-svelte';
 
 	interface Props {
 		str: string;
@@ -67,11 +68,14 @@
 </script>
 
 <div class="m-2 flex flex-col rounded border-1 border-gray-400 p-2 shadow-lg">
-	<h1 class={`m-2 rounded text-center text-lg font-extrabold ${color}`}>
+	<div class="flex flex-row items-stretch my-2">
+	<h1 class={`w-full mx-2 rounded text-center text-lg font-extrabold ${color}`}>
 		{type}
 		{type === 'rt' ? `P${cols[plate_index]}` : ''}
 	</h1>
-	<div class="grid grid-cols-12">
+	<Button color="light" size="xs" onclick={() => {str=""}}>Clear</Button>
+	</div>
+	<div class="grid grid-cols-12 content-center items-center justify-items-center">
 		{#each rows as row, row_index (row)}
 			{#each cols as col, col_index (col)}
 				<Cell

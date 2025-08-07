@@ -26,7 +26,7 @@
 				<Select class="mt-2" {items} bind:value={sample_index} placeholder="" />
 			</Label>
 		</div>
-		<div class="grid grid-cols-1 lg:grid-cols-2">
+		<div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4">
 			<Plate str={samples[sample_index][2]} type="p5" plate_index={0} color="bg-red-400" />
 			<Plate str={samples[sample_index][3]} type="p7" plate_index={0} color="bg-blue-400" />
 			<Plate str={samples[sample_index][4]} type="rt" plate_index={0} color="bg-yellow-400" />

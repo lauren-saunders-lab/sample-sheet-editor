@@ -27,7 +27,7 @@
 </script>
 
 <button
-	class={`${cursor} m-1 flex h-5 w-5 items-center justify-center rounded-full p-4 text-center text-xs text-gray-800 shadow-lg transition-colors duration-200 ease-in-out ${selected || selecting ? color : 'bg-gray-400'} ${selected ? 'opacity-100' : 'opacity-50'}`}
+	class={`${cursor} m-1 flex items-center justify-center rounded p-1 text-center text-xs text-gray-800 shadow-lg transition-colors duration-200 ease-in-out ${selected || selecting ? color : 'bg-gray-400'} ${selected ? 'opacity-100' : 'opacity-50'}`}
 	{onmouseenter}
 	{onmousedown}
 	{onmouseup}

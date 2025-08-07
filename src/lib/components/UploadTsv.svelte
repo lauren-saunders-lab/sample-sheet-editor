@@ -20,7 +20,7 @@
 		if (target.files) {
 			const txt = await target.files[0].text();
 			let lines = [];
-			for (const line of txt.split('\n')) {
+			for (const line of txt.trim().split('\n')) {
 				lines.push(line.split('\t'));
 			}
 			samples = lines.slice(1);
