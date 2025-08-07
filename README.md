@@ -19,7 +19,7 @@ To run the unit tests locally:
 - `pnpm test`
 
 To format the code:
- 
+
 - `pnpm format`
 
 To lint the code:

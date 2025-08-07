@@ -1,9 +1,13 @@
+<svelte:options runes={true} />
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
 	interface Props {
-		type?: string;
-		selecting?: string;
+		color: string;
+		selected: boolean;
+		selecting: boolean;
+		cursor: string;
 		onmouseenter?: () => void;
 		onmousedown?: () => void;
 		onmouseup?: () => void;
@@ -11,46 +15,19 @@
 	}
 
 	const {
-		type = '',
-		selecting = '',
+		color,
+		selected,
+		selecting,
+		cursor,
 		onmouseenter = () => {},
 		onmousedown = () => {},
 		onmouseup = () => {},
 		children
 	}: Props = $props();
-
-	let classes = $derived.by(() => {
-		if (!type && !selecting) {
-			return 'opacity-50 bg-gray-200';
-		}
-		if (type == 'p5') {
-			return 'opacity-100 bg-red-400';
-		}
-		if (selecting == 'p5') {
-			return 'opacity-50 bg-red-400';
-		}
-		if (type == 'p7') {
-			return 'opacity-100 bg-blue-400';
-		}
-		if (selecting == 'p7') {
-			return 'opacity-50 bg-blue-400';
-		}
-		if (type == 'rt') {
-			return 'opacity-100 bg-green-400';
-		}
-		if (selecting == 'rt') {
-			return 'opacity-50 bg-green-400';
-		}
-	});
 </script>
 
 <button
-	class="
-m-1 flex items-center justify-center rounded p-4 text-center
-text-gray-800 shadow-lg
-transition-colors duration-200 ease-in-out
-{classes}
-"
+	class={`${cursor} m-1 flex h-5 w-5 items-center justify-center rounded-full p-4 text-center text-xs text-gray-800 shadow-lg transition-colors duration-200 ease-in-out ${selected || selecting ? color : 'bg-gray-400'} ${selected ? 'opacity-100' : 'opacity-50'}`}
 	{onmouseenter}
 	{onmousedown}
 	{onmouseup}

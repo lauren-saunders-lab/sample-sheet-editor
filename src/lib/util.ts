@@ -1,7 +1,22 @@
 const nCols = 12;
 const nRows = 8;
 
-function getRowIndex(str: string): number {
+function getPlateIndex(str: string, type: string): number {
+	if (type !== 'rt') {
+		return 0;
+	}
+	const plate_index = parseInt(str.split('-')[0].substring(1), 10) - 1;
+	if (plate_index >= 0) {
+		return plate_index;
+	} else {
+		return -1;
+	}
+}
+
+function getRowIndex(str: string, type: string): number {
+	if (type === 'rt') {
+		str = str.split('-')[1];
+	}
 	const row = str.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
 	if (row >= 0 && row < nRows) {
 		return row;
@@ -9,7 +24,10 @@ function getRowIndex(str: string): number {
 	return -1;
 }
 
-function getColIndex(str: string): number {
+function getColIndex(str: string, type: string): number {
+	if (type === 'rt') {
+		str = str.split('-')[1];
+	}
 	const col = parseInt(str.substring(1), 10);
 	if (col > 0 && col <= nCols) {
 		return col - 1;
@@ -17,51 +35,47 @@ function getColIndex(str: string): number {
 	return -1;
 }
 
-function append_to_array(str: string, label: string, array: Array<Array<string>>) {
+export function parse(str: string, type: string, plate_index: number = 0): Array<Array<boolean>> {
+	const array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
 	for (const region of str.split(',')) {
 		if (region === '') {
-			return;
+			return array;
 		}
 		const [start, end] = region.split(':');
 		if (!start) {
 			// invalid
-			return;
+			return array;
 		}
 		if (!end) {
 			// single cell
-			const row = getRowIndex(start);
-			const col = getColIndex(start);
+			const row = getRowIndex(start, type);
+			const col = getColIndex(start, type);
 			if (row < 0 || col < 0) {
-				return;
+				return array;
 			}
-			array[row][col] = label;
+			if (getPlateIndex(start, type) === plate_index) {
+				array[row][col] = true;
+			}
 		} else {
 			// range of cells
-			const rowStart = getRowIndex(start);
-			const colStart = getColIndex(start);
-			const rowEnd = getRowIndex(end);
-			const colEnd = getColIndex(end);
+			const rowStart = getRowIndex(start, type);
+			const colStart = getColIndex(start, type);
+			const rowEnd = getRowIndex(end, type);
+			const colEnd = getColIndex(end, type);
 			if (rowStart < 0 || rowEnd < 0 || colStart < 0 || colEnd < 0) {
-				return;
+				return array;
 			}
 			if (rowStart > rowEnd || colStart > colEnd) {
-				return;
+				return array;
 			}
-			console.log(rowStart, rowEnd, colStart, colEnd);
-			for (let row = rowStart; row <= rowEnd; ++row) {
-				for (let col = colStart; col <= colEnd; ++col) {
-					console.log(row, col);
-					array[row][col] = label;
+			if (getPlateIndex(start, type) === plate_index) {
+				for (let row = rowStart; row <= rowEnd; ++row) {
+					for (let col = colStart; col <= colEnd; ++col) {
+						array[row][col] = true;
+					}
 				}
 			}
 		}
 	}
-}
-
-export function parse(p5: string, p7: string, rt: string): Array<Array<string>> {
-	const array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => ''));
-	append_to_array(p5, 'p5', array);
-	append_to_array(p7, 'p7', array);
-	append_to_array(rt, 'rt', array);
 	return array;
 }
