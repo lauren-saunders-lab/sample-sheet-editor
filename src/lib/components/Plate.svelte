@@ -23,6 +23,8 @@
 	const cols = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
 
 	let selection_start = $state('');
+	let selection_start_row = $state('');
+	let selection_start_col = $state('');
 	let selection_end = $state('');
 	let selection_array = $derived(
 		parse(
@@ -38,8 +40,18 @@
 	function mousedown(row_index: number, col_index: number) {
 		if (!selecting) {
 			selecting = true;
-			cursor = 'cursor-nwse-resize';
-			selection_start = `${rows[row_index]}${cols[col_index]}`;
+			if (type === 'p5') {
+				// column only
+				cursor = 'cursor-ns-resize';
+			} else if (type === 'p7') {
+				// row only
+				cursor = 'cursor-ew-resize';
+			} else {
+				cursor = 'cursor-nwse-resize';
+			}
+			selection_start_row = rows[row_index];
+			selection_start_col = cols[col_index];
+			selection_start = `${selection_start_row}${selection_start_col}`;
 			selection_end = '';
 		}
 	}
@@ -47,7 +59,7 @@
 	function mouseup(row_index: number, col_index: number) {
 		if (selecting) {
 			const start = `${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
-			const end = `${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
+			const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
 			const new_str = [start, end].filter(Boolean).join(':');
 			str = [str, new_str].filter(Boolean).join(',');
 			selecting = false;
@@ -59,7 +71,16 @@
 
 	function mouseenter(row_index: number, col_index: number) {
 		if (selecting) {
-			const new_selection_end = `${rows[row_index]}${cols[col_index]}`;
+			let new_selection_end = '';
+			if (type === 'p5') {
+				// column only
+				new_selection_end = `${rows[row_index]}${selection_start_col}`;
+			} else if (type === 'p7') {
+				// row only
+				new_selection_end = `${selection_start_row}${cols[col_index]}`;
+			} else {
+				new_selection_end = `${rows[row_index]}${cols[col_index]}`;
+			}
 			if (new_selection_end !== selection_start) {
 				selection_end = new_selection_end;
 			}
@@ -68,12 +89,18 @@
 </script>
 
 <div class="m-2 flex flex-col rounded border-1 border-gray-400 p-2 shadow-lg">
-	<div class="flex flex-row items-stretch my-2">
-	<h1 class={`w-full mx-2 rounded text-center text-lg font-extrabold ${color}`}>
-		{type}
-		{type === 'rt' ? `P${cols[plate_index]}` : ''}
-	</h1>
-	<Button color="light" size="xs" onclick={() => {str=""}}>Clear</Button>
+	<div class="my-2 flex flex-row items-stretch">
+		<h1 class={`mx-2 w-full rounded text-center text-lg font-extrabold ${color}`}>
+			{type}
+			{type === 'rt' ? `P${cols[plate_index]}` : ''}
+		</h1>
+		<Button
+			color="light"
+			size="xs"
+			onclick={() => {
+				str = '';
+			}}>Clear</Button
+		>
 	</div>
 	<div class="grid grid-cols-12 content-center items-center justify-items-center">
 		{#each rows as row, row_index (row)}
