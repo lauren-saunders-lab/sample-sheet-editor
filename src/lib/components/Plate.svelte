@@ -42,12 +42,12 @@
 			selecting = true;
 			if (type === 'p5') {
 				// column only
-				cursor = 'cursor-ns-resize';
+				cursor = 'cursor-s-resize';
 			} else if (type === 'p7') {
 				// row only
-				cursor = 'cursor-ew-resize';
+				cursor = 'cursor-e-resize';
 			} else {
-				cursor = 'cursor-nwse-resize';
+				cursor = 'cursor-se-resize';
 			}
 			selection_start_row = rows[row_index];
 			selection_start_col = cols[col_index];
