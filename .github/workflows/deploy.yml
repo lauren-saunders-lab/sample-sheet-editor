@@ -1,7 +1,5 @@
-name: Build and deploy to gh-pages
-
+name: Deploy
 on: push
-
 jobs:
   build:
     permissions:
