@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Tests
 on:
   push:
     branches: main
@@ -19,7 +19,8 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm exec playwright install --with-deps
-      - run: pnpm test
+      - run: pnpm test:unit
+      - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

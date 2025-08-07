@@ -17,7 +17,7 @@ function getColIndex(str: string): number {
 	return -1;
 }
 
-export function append_to_array(str: string, label: string, array: Array<Array<string>>) {
+function append_to_array(str: string, label: string, array: Array<Array<string>>) {
 	for (const region of str.split(',')) {
 		if (region === '') {
 			return;
