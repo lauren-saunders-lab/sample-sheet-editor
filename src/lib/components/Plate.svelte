@@ -56,19 +56,6 @@
 		}
 	}
 
-	function mouseup(row_index: number, col_index: number) {
-		if (selecting) {
-			const start = `${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
-			const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
-			const new_str = [start, end].filter(Boolean).join(':');
-			str = [str, new_str].filter(Boolean).join(',');
-			selecting = false;
-			cursor = 'cursor-pointer';
-			selection_start = '';
-			selection_end = '';
-		}
-	}
-
 	function mouseenter(row_index: number, col_index: number) {
 		if (selecting) {
 			let new_selection_end = '';
@@ -86,11 +73,24 @@
 			}
 		}
 	}
+
+	function onmouseup() {
+		if (selecting) {
+			const start = `${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
+			const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
+			const new_str = [start, end].filter(Boolean).join(':');
+			str = [str, new_str].filter(Boolean).join(',');
+			selecting = false;
+			cursor = 'cursor-pointer';
+			selection_start = '';
+			selection_end = '';
+		}
+	}
 </script>
 
-<div class="m-2 flex flex-col rounded border-1 border-gray-400 p-2 shadow-lg">
-	<div class="my-2 flex flex-row items-stretch">
-		<h1 class={`mx-2 w-full rounded text-center text-lg font-extrabold ${color}`}>
+<div class="flex flex-col rounded border-1 border-gray-400 p-2 shadow-lg">
+	<div class="mb-2 flex flex-row items-stretch">
+		<h1 class={`mr-2 w-full rounded text-center text-lg font-extrabold ${color}`}>
 			{type}
 			{type === 'rt' ? `P${cols[plate_index]}` : ''}
 		</h1>
@@ -102,7 +102,7 @@
 			}}>Clear</Button
 		>
 	</div>
-	<div class="grid grid-cols-12 content-center items-center justify-items-center">
+	<div class="grid grid-cols-12 content-center items-center justify-items-center gap-1" {onmouseup}>
 		{#each rows as row, row_index (row)}
 			{#each cols as col, col_index (col)}
 				<Cell
@@ -111,8 +111,7 @@
 					selecting={selection_array[row_index][col_index]}
 					{cursor}
 					onmouseenter={() => mouseenter(row_index, col_index)}
-					onmousedown={() => mousedown(row_index, col_index)}
-					onmouseup={() => mouseup(row_index, col_index)}>{row}{col}</Cell
+					onmousedown={() => mousedown(row_index, col_index)}>{row}{col}</Cell
 				>
 			{/each}
 		{/each}

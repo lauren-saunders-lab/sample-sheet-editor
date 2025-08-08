@@ -10,7 +10,6 @@
 		cursor: string;
 		onmouseenter?: () => void;
 		onmousedown?: () => void;
-		onmouseup?: () => void;
 		children?: Snippet;
 	}
 
@@ -21,16 +20,14 @@
 		cursor,
 		onmouseenter = () => {},
 		onmousedown = () => {},
-		onmouseup = () => {},
 		children
 	}: Props = $props();
 </script>
 
 <button
-	class={`${cursor} m-1 flex items-center justify-center rounded p-1 text-center text-xs text-gray-800 shadow-lg transition-colors duration-200 ease-in-out ${selected || selecting ? color : 'bg-gray-400'} ${selected ? 'opacity-100' : 'opacity-50'}`}
+	class={`${cursor} flex h-full w-full items-center justify-center rounded p-2 text-center text-xs text-gray-800 shadow-lg transition-colors duration-200 ease-in-out ${selected || selecting ? color : 'bg-gray-400'} ${selected ? 'opacity-100' : 'opacity-50'}`}
 	{onmouseenter}
 	{onmousedown}
-	{onmouseup}
 >
 	{@render children?.()}
 </button>
