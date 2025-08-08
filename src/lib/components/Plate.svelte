@@ -2,21 +2,21 @@
 
 <script lang="ts">
 	import Cell from '$lib/components/Cell.svelte';
-	import { parse } from '$lib/util';
+	import { parse, type SeqType } from '$lib/util';
 	import { Button } from 'flowbite-svelte';
 
 	interface Props {
 		str: string;
-		type: string;
+		type: SeqType;
 		plate_index: number;
 		color: string;
 	}
 
 	let {
 		str = $bindable(''),
-		type = 'p5',
-		plate_index = 0,
-		color = 'bg-gray-400'
+		type,
+		plate_index,
+		color
 	}: Props = $props();
 
 	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
@@ -46,7 +46,7 @@
 			} else if (type === 'p7') {
 				// row only
 				cursor = 'cursor-e-resize';
-			} else {
+			} else if (type === 'rt') {
 				cursor = 'cursor-se-resize';
 			}
 			selection_start_row = rows[row_index];
@@ -65,7 +65,7 @@
 			} else if (type === 'p7') {
 				// row only
 				new_selection_end = `${selection_start_row}${cols[col_index]}`;
-			} else {
+			} else if (type === 'rt'){
 				new_selection_end = `${rows[row_index]}${cols[col_index]}`;
 			}
 			if (new_selection_end !== selection_start) {

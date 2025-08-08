@@ -1,7 +1,9 @@
 const nCols = 12;
 const nRows = 8;
 
-function getPlateIndex(str: string, type: string): number {
+export type SeqType = "p5" | "p7" | "rt";
+
+function getPlateIndex(str: string, type: SeqType): number {
 	if (type !== 'rt') {
 		return 0;
 	}
@@ -13,7 +15,7 @@ function getPlateIndex(str: string, type: string): number {
 	}
 }
 
-function getRowIndex(str: string, type: string): number {
+function getRowIndex(str: string, type: SeqType): number {
 	if (type === 'rt') {
 		str = str.split('-')[1];
 	}
@@ -24,7 +26,7 @@ function getRowIndex(str: string, type: string): number {
 	return -1;
 }
 
-function getColIndex(str: string, type: string): number {
+function getColIndex(str: string, type: SeqType): number {
 	if (type === 'rt') {
 		str = str.split('-')[1];
 	}
@@ -35,7 +37,7 @@ function getColIndex(str: string, type: string): number {
 	return -1;
 }
 
-export function parse(str: string, type: string, plate_index: number = 0): Array<Array<boolean>> {
+export function parse(str: string, type: SeqType, plate_index: number = 0): Array<Array<boolean>> {
 	const array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
 	for (const region of str.split(',')) {
 		if (region === '') {
