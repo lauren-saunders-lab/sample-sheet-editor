@@ -11,8 +11,8 @@
 	let samples = $state([defaultSample]);
 </script>
 
-<Banner dismissable={false} class="fixed">
-	<img src={favicon} alt="sci-rocket" class="absolute left-1 m-0 h-12 p-0" />
+<Banner dismissable={false} class="fixed bg-[#d2d2d2]">
+	<img src={favicon} alt="sci-rocket" class="absolute top-0 left-2 h-14" />
 	<h1 class="font-bold">sci-rocket samplesheet editor</h1>
 </Banner>
 <div class="my-20">
