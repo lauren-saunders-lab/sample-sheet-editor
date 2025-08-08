@@ -1,14 +1,16 @@
-# WIP sci-rocket samplesheet editor
+# sci-rocket sample-sheet editor
 
-https://www.keegan.ch/samplesheet-editor
+An online tool for creating, viewing and editing [sci-rocket](https://odomlab2.github.io/sci-rocket/) [sample-sheets](https://odomlab2.github.io/sci-rocket/overview_files/).
+
+Temporary URL: https://www.keegan.ch/sample-sheet-editor
 
 ## Local development
 
 Initial setup to edit the website locally:
 
+- clone the repo
 - install [pnpm](https://pnpm.io/installation), e.g. `curl -fsSL https://get.pnpm.io/install.sh | sh -`
 - install node dependencies, e.g. `pnpm install`
-- install playwright browsers for testing: `pnpm exec playwright install --with-deps`
 
 To start a dev server:
 

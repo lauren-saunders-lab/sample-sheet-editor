@@ -13,7 +13,7 @@
 
 <Banner dismissable={false} class="fixed bg-[#d2d2d2]">
 	<img src={favicon} alt="sci-rocket" class="absolute top-0 left-2 h-14" />
-	<h1 class="font-bold">sci-rocket samplesheet editor</h1>
+	<h1 class="font-bold">sci-rocket sample-sheet editor</h1>
 </Banner>
 <div class="my-20">
 	<Tabs>

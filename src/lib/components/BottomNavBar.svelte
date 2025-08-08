@@ -15,9 +15,9 @@
 
 <BottomNav position="fixed" navType="border" classes={{ inner: 'grid-cols-3' }}>
 	<BottomNavItemNew bind:samples />
-	<Tooltip arrow={false}>Create a new samplesheet</Tooltip>
+	<Tooltip arrow={false}>Create a new sample-sheet</Tooltip>
 	<BottomNavItemOpen bind:samples />
-	<Tooltip arrow={false}>Open an existing samplesheet</Tooltip>
+	<Tooltip arrow={false}>Open an existing sample-sheet</Tooltip>
 	<BottomNavItemSave bind:samples />
-	<Tooltip arrow={false}>Save the samplesheet</Tooltip>
+	<Tooltip arrow={false}>Save the sample-sheet</Tooltip>
 </BottomNav>
