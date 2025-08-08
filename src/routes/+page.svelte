@@ -4,7 +4,7 @@
 	import Plate from '$lib/components/Plate.svelte';
 	import { Select, Label, Input } from 'flowbite-svelte';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
-	let samples = $state([]);
+	let samples = $state([['data', 'experiment', '', '', '', 'sample', 'mouse', '10000']]);
 	let sample_index = $state(0);
 	let items = $derived(
 		samples.map((v, i) => {
