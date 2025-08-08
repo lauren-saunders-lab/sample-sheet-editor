@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import Cell from '$lib/components/Cell.svelte';
-	import { parse, type SeqType } from '$lib/util';
+	import { additionalSelectionValid, parse, type SeqType } from '$lib/util';
 	import { Button } from 'flowbite-svelte';
 
 	interface Props {
@@ -12,12 +12,7 @@
 		color: string;
 	}
 
-	let {
-		str = $bindable(''),
-		type,
-		plate_index,
-		color
-	}: Props = $props();
+	let { str = $bindable(''), type, plate_index, color }: Props = $props();
 
 	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 	const cols = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
@@ -26,13 +21,12 @@
 	let selection_start_row = $state('');
 	let selection_start_col = $state('');
 	let selection_end = $state('');
-	let selection_array = $derived(
-		parse(
-			`${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}:${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`,
-			type,
-			plate_index
-		)
-	);
+	let selection = $derived.by(() => {
+		const start = `${selection_start && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
+		const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
+		return [start, end].filter(Boolean).join(':');
+	});
+	let selection_array = $derived(parse(selection, type, plate_index));
 	let array = $derived(parse(str, type, plate_index));
 	let selecting = $state(false);
 	let cursor = $state('cursor-pointer');
@@ -65,7 +59,7 @@
 			} else if (type === 'p7') {
 				// row only
 				new_selection_end = `${selection_start_row}${cols[col_index]}`;
-			} else if (type === 'rt'){
+			} else if (type === 'rt') {
 				new_selection_end = `${rows[row_index]}${cols[col_index]}`;
 			}
 			if (new_selection_end !== selection_start) {
@@ -76,10 +70,9 @@
 
 	function onmouseup() {
 		if (selecting) {
-			const start = `${type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
-			const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
-			const new_str = [start, end].filter(Boolean).join(':');
-			str = [str, new_str].filter(Boolean).join(',');
+			if (additionalSelectionValid(str, selection, type, plate_index)) {
+				str = [str, selection].filter(Boolean).join(',');
+			}
 			selecting = false;
 			cursor = 'cursor-pointer';
 			selection_start = '';
@@ -102,7 +95,10 @@
 			}}>Clear</Button
 		>
 	</div>
-	<div class="grid grid-cols-12 content-center items-center justify-items-center gap-1" {onmouseup}>
+	<div
+		class="grid grid-cols-12 content-center items-center justify-items-center gap-[1px]"
+		{onmouseup}
+	>
 		{#each rows as row, row_index (row)}
 			{#each cols as col, col_index (col)}
 				<Cell
@@ -115,8 +111,5 @@
 				>
 			{/each}
 		{/each}
-	</div>
-	<div class="text-center">
-		{str}
 	</div>
 </div>

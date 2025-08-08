@@ -1,7 +1,20 @@
 const nCols = 12;
 const nRows = 8;
 
-export type SeqType = "p5" | "p7" | "rt";
+type SeqType = 'p5' | 'p7' | 'rt';
+
+const sampleHeaders = [
+	'path_fastq',
+	'experiment_name',
+	'p5',
+	'p7',
+	'rt',
+	'sample_name',
+	'species',
+	'n_expected_cells'
+];
+
+const defaultSample = ['data', 'experiment', '', '', '', 'sample', 'mouse', '10000'];
 
 function getPlateIndex(str: string, type: SeqType): number {
 	if (type !== 'rt') {
@@ -37,7 +50,7 @@ function getColIndex(str: string, type: SeqType): number {
 	return -1;
 }
 
-export function parse(str: string, type: SeqType, plate_index: number = 0): Array<Array<boolean>> {
+function parse(str: string, type: SeqType, plate_index: number = 0): Array<Array<boolean>> {
 	const array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
 	for (const region of str.split(',')) {
 		if (region === '') {
@@ -81,3 +94,23 @@ export function parse(str: string, type: SeqType, plate_index: number = 0): Arra
 	}
 	return array;
 }
+
+function additionalSelectionValid(
+	str: string,
+	additional_str: string,
+	type: SeqType,
+	plate_index: number = 0
+): boolean {
+	const a = parse(str, type, plate_index);
+	const b = parse(additional_str, type, plate_index);
+	for (let col = 0; col < nCols; col++) {
+		for (let row = 0; row < nRows; row++) {
+			if (!a[row][col] && b[row][col]) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+export { type SeqType, parse, sampleHeaders, defaultSample, additionalSelectionValid };

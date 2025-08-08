@@ -4,6 +4,7 @@
 	import { FloppyDiskSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
 	import FileSaver from 'file-saver';
+	import { sampleHeaders } from '$lib/util';
 
 	let {
 		samples = $bindable([])
@@ -12,18 +13,7 @@
 	} = $props();
 
 	function onclick() {
-		let lines = [
-			[
-				'path_fastq',
-				'experiment_name',
-				'p5',
-				'p7',
-				'rt',
-				'sample_name',
-				'species',
-				'n_expected_cells'
-			].join('\t')
-		];
+		let lines = [sampleHeaders.join('\t')];
 		for (const sample of samples) {
 			lines.push(sample.join('\t'));
 		}

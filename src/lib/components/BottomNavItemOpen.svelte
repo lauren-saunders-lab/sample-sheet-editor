@@ -23,7 +23,6 @@
 			}
 			// todo: check first line has the correct column names
 			samples = lines.slice(1);
-			console.log(samples);
 		} else {
 			samples = [];
 		}

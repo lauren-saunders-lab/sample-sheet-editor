@@ -46,4 +46,7 @@ describe('parse', () => {
 		expect(a[6][9]).toBe(true);
 		expect(a[7][9]).toBe(false);
 	});
+	// todo: add tests that p7 col or p5 row or p5/p7 rectangles are rejected as invalid
+	// todo: more invalid inputs
+	// todo: rt tests
 });

@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { FileCirclePlusSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
+	import { defaultSample } from '$lib/util';
 
 	let {
 		samples = $bindable([])
@@ -11,7 +12,7 @@
 	} = $props();
 
 	function onclick() {
-		samples = [['data', 'experiment', '', '', '', 'sample', 'mouse', '10000']];
+		samples = [defaultSample];
 	}
 </script>
 
