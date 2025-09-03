@@ -6,10 +6,10 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -18,7 +18,7 @@ jobs:
       - run: pnpm run build
         env:
           BASE_PATH: '/${{ github.event.repository.name }}'
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: 'build/'
   deploy:

@@ -8,14 +8,24 @@
 	interface Props {
 		str: string;
 		type: SeqType;
-		plate_index: number;
-		color: string;
+		plate_index?: number;
 	}
 
-	let { str = $bindable(''), type, plate_index, color }: Props = $props();
+	let { str = $bindable(''), type, plate_index = 0 }: Props = $props();
 
 	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 	const cols = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
+	let color = $derived.by(() => {
+		if (type === 'p5') {
+			return 'bg-red-400';
+		} else if (type === 'p7') {
+			return 'bg-blue-400';
+		} else if (type === 'rt') {
+			return 'bg-yellow-400';
+		} else {
+			return 'gb-gray-400';
+		}
+	});
 
 	let selection_start = $state('');
 	let selection_start_row = $state('');

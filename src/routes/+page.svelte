@@ -51,11 +51,11 @@
 						</Label>
 					</div>
 					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
-						<Plate bind:str={sample[2]} type="p5" plate_index={0} color="bg-red-400" />
-						<Plate bind:str={sample[3]} type="p7" plate_index={0} color="bg-blue-400" />
+						<Plate bind:str={sample[2]} type="p5" />
+						<Plate bind:str={sample[3]} type="p7" />
 						<!-- TODO: Can there be more than two plates for RT? -->
-						<Plate bind:str={sample[4]} type="rt" plate_index={0} color="bg-yellow-400" />
-						<Plate bind:str={sample[4]} type="rt" plate_index={1} color="bg-yellow-400" />
+						<Plate bind:str={sample[4]} type="rt" plate_index={0} />
+						<Plate bind:str={sample[4]} type="rt" plate_index={1} />
 					</div>
 				</div>
 			</TabItem>
