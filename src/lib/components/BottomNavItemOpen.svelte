@@ -3,14 +3,23 @@
 <script lang="ts">
 	import { FileImportSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
-	import { type Sample, makeEmptySample, type Experiment, type TsvRow, makeEmptyExperiment } from '$lib/util';
+	import {
+		type Sample,
+		makeEmptySample,
+		type Experiment,
+		makeEmptyExperiment,
+		count_rt_wells,
+		count_rt_plates
+	} from '$lib/util';
 
 	let {
 		samples = $bindable([]),
-		experiment = $bindable()
+		experiment = $bindable(),
+		num_plates = $bindable()
 	}: {
 		samples: Array<Sample>;
 		experiment: Experiment;
+		num_plates: number;
 	} = $props();
 
 	let files: FileList | undefined = $state(undefined);
@@ -18,6 +27,7 @@
 
 	async function updateFile(event: Event) {
 		samples = [];
+		num_plates = 1;
 		const target = event.target as HTMLInputElement;
 		if (target.files) {
 			const txt = await target.files[0].text();
@@ -37,7 +47,13 @@
 				for (const key of Object.keys(sample)) {
 					sample[key as keyof Sample] = tsvRow?.[key];
 				}
-				samples.push(sample as Sample);
+				// calculate number of cells per well for this sample
+				sample.cells_per_well = Math.floor(
+					parseInt(tsvRow.n_expected_cells) / count_rt_wells(tsvRow.rt)
+				);
+				// ensure we display enough plates
+				num_plates = Math.max(num_plates, count_rt_plates(tsvRow.rt));
+				samples.push(sample);
 				// create empty experiment and update with data from row
 				experiment = makeEmptyExperiment();
 				for (const key of Object.keys(experiment)) {
