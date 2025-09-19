@@ -3,28 +3,34 @@
 <script lang="ts">
 	import { FileImportSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
+	import { type Sample, makeEmptySample } from '$lib/util';
 
 	let {
 		samples = $bindable([])
 	}: {
-		samples: Array<Array<string>>;
+		samples: Array<Sample>;
 	} = $props();
 
 	let files: FileList | undefined = $state(undefined);
 	let fileInput: HTMLInputElement;
 
 	async function updateFile(event: Event) {
+		samples = [];
 		const target = event.target as HTMLInputElement;
 		if (target.files) {
 			const txt = await target.files[0].text();
 			let lines = [];
 			for (const line of txt.trim().split('\n')) {
-				lines.push(line.split('\t'));
+				lines.push(line.split('\t').map(l => l.trim()));
 			}
-			// todo: check first line has the correct column names
-			samples = lines.slice(1);
-		} else {
-			samples = [];
+			const headers = lines[0];
+			for (const line of lines.slice(1)) {
+				const sample: Sample = makeEmptySample();
+				for(let j=0; j<Math.min(headers.length, line.length); j++) {
+					sample[headers[j]] = line[j];
+				}
+				samples.push(sample as Sample);
+			}
 		}
 	}
 </script>

@@ -3,6 +3,18 @@ const nRows = 8;
 
 type SeqType = 'p5' | 'p7' | 'rt';
 
+type Sample = {
+	path_fastq?: string;
+	path_bcl?: string;
+	experiment_name: string;
+	sample_name: string;
+	species: string;
+	n_expected_cells: string;
+	p5: string;
+	p7: string;
+	rt: string;
+};
+
 const sampleHeaders = [
 	'path_fastq',
 	'experiment_name',
@@ -14,7 +26,29 @@ const sampleHeaders = [
 	'n_expected_cells'
 ];
 
-const defaultSample = ['data', 'experiment', '', '', '', 'sample', 'mouse', '10000'];
+function makeDefaultSample(): Sample {
+	return {
+	path_fastq: 'data',
+	experiment_name: 'experiment',
+	sample_name: 'sample',
+	species: 'mouse',
+	n_expected_cells: '100',
+	p5: '',
+	p7: '',
+	rt: ''
+}}
+
+function makeEmptySample(): Sample {
+	return {
+	path_fastq: '',
+	experiment_name: '',
+	sample_name: '',
+	species: '',
+	n_expected_cells: '',
+	p5: '',
+	p7: '',
+	rt: ''
+}}
 
 function getPlateIndex(str: string, type: SeqType): number {
 	if (type !== 'rt') {
@@ -113,4 +147,12 @@ function additionalSelectionValid(
 	return false;
 }
 
-export { type SeqType, parse, sampleHeaders, defaultSample, additionalSelectionValid };
+export {
+	type Sample,
+	type SeqType,
+	parse,
+	sampleHeaders,
+	makeDefaultSample,
+	makeEmptySample,
+	additionalSelectionValid
+};

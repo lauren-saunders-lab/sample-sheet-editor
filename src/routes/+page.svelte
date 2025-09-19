@@ -5,10 +5,10 @@
 	import { Banner, Label, Input, Tabs, TabItem, Button } from 'flowbite-svelte';
 	import { CirclePlusOutline } from 'flowbite-svelte-icons';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
-	import { defaultSample } from '$lib/util';
+	import { makeDefaultSample } from '$lib/util';
 	import favicon from '$lib/assets/favicon.jpeg';
 
-	let samples = $state([defaultSample]);
+	let samples = $state([makeDefaultSample()]);
 </script>
 
 <Banner dismissable={false} class="fixed bg-[#d2d2d2]">
@@ -18,44 +18,44 @@
 <div class="my-20">
 	<Tabs>
 		{#each samples as sample, sample_index (sample_index)}
-			<TabItem title={sample[5]} open={sample_index === 0}>
+			<TabItem title={sample.sample_name} open={sample_index === 0}>
 				<div class="flex flex-col space-y-4 p-4">
 					<div>
 						<Label>
 							Sample name
-							<Input bind:value={sample[5]} />
+							<Input bind:value={sample.sample_name} />
 						</Label>
 					</div>
 					<div>
 						<Label>
 							Path
-							<Input bind:value={sample[0]} />
+							<Input bind:value={sample.path_fastq} />
 						</Label>
 					</div>
 					<div>
 						<Label>
 							Experiment name
-							<Input bind:value={sample[1]} />
+							<Input bind:value={sample.experiment_name} />
 						</Label>
 					</div>
 					<div>
 						<Label>
 							Species
-							<Input bind:value={sample[6]} />
+							<Input bind:value={sample.species} />
 						</Label>
 					</div>
 					<div>
 						<Label>
 							Num expected cells
-							<Input bind:value={sample[7]} />
+							<Input bind:value={sample.n_expected_cells} />
 						</Label>
 					</div>
 					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
-						<Plate bind:str={sample[2]} type="p5" />
-						<Plate bind:str={sample[3]} type="p7" />
+						<Plate bind:str={sample.p5} type="p5" />
+						<Plate bind:str={sample.p7} type="p7" />
 						<!-- TODO: Can there be more than two plates for RT? -->
-						<Plate bind:str={sample[4]} type="rt" plate_index={0} />
-						<Plate bind:str={sample[4]} type="rt" plate_index={1} />
+						<Plate bind:str={sample.rt} type="rt" plate_index={0} />
+						<Plate bind:str={sample.rt} type="rt" plate_index={1} />
 					</div>
 				</div>
 			</TabItem>
@@ -65,7 +65,7 @@
 			color="light"
 			size="xs"
 			onclick={() => {
-				samples.push(defaultSample);
+				samples.push(makeDefaultSample());
 			}}
 		>
 			<CirclePlusOutline class="me-2 h-5 w-5" /> Add sample

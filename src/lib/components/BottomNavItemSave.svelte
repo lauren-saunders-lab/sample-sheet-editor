@@ -4,18 +4,18 @@
 	import { FloppyDiskSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
 	import FileSaver from 'file-saver';
-	import { sampleHeaders } from '$lib/util';
+	import { sampleHeaders, type Sample } from '$lib/util';
 
 	let {
 		samples = $bindable([])
 	}: {
-		samples: Array<Array<string>>;
+		samples: Array<Sample>;
 	} = $props();
 
 	function onclick() {
 		let lines = [sampleHeaders.join('\t')];
 		for (const sample of samples) {
-			lines.push(sample.join('\t'));
+			lines.push(sampleHeaders.map(header => {return sample[header as keyof Sample] ?? ''}).join('\t'));
 		}
 		let blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
 		FileSaver.saveAs(blob, 'samplesheet.tsv');
