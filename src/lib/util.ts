@@ -13,42 +13,49 @@ type Sample = {
 	p5: string;
 	p7: string;
 	rt: string;
+	hashing?: string;
 };
 
 const sampleHeaders = [
 	'path_fastq',
+	'path_bcl',
 	'experiment_name',
+	'sample_name',
+	'species',
+	'n_expected_cells',
 	'p5',
 	'p7',
 	'rt',
-	'sample_name',
-	'species',
-	'n_expected_cells'
+	'hashing'
 ];
 
 function makeDefaultSample(): Sample {
 	return {
-	path_fastq: 'data',
-	experiment_name: 'experiment',
-	sample_name: 'sample',
-	species: 'mouse',
-	n_expected_cells: '100',
-	p5: '',
-	p7: '',
-	rt: ''
-}}
+		path_fastq: 'data',
+		path_bcl: 'data',
+		experiment_name: 'experiment',
+		sample_name: 'sample',
+		species: 'mouse',
+		n_expected_cells: '100',
+		p5: '',
+		p7: '',
+		rt: '',
+		hashing: ''
+	};
+}
 
 function makeEmptySample(): Sample {
 	return {
-	path_fastq: '',
-	experiment_name: '',
-	sample_name: '',
-	species: '',
-	n_expected_cells: '',
-	p5: '',
-	p7: '',
-	rt: ''
-}}
+		path_fastq: '',
+		experiment_name: '',
+		sample_name: '',
+		species: '',
+		n_expected_cells: '',
+		p5: '',
+		p7: '',
+		rt: ''
+	};
+}
 
 function getPlateIndex(str: string, type: SeqType): number {
 	if (type !== 'rt') {
