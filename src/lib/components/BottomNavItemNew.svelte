@@ -3,16 +3,19 @@
 <script lang="ts">
 	import { FileCirclePlusSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
-	import { makeDefaultSample, type Sample } from '$lib/util';
+	import { type Experiment, makeDefaultExperiment, makeDefaultSample, type Sample } from '$lib/util';
 
 	let {
-		samples = $bindable([])
+		samples = $bindable([]),
+		experiment = $bindable()
 	}: {
 		samples: Array<Sample>;
+		experiment: Experiment;
 	} = $props();
 
 	function onclick() {
 		samples = [makeDefaultSample()];
+		experiment = makeDefaultExperiment();
 	}
 </script>
 

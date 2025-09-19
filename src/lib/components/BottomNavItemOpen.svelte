@@ -3,12 +3,14 @@
 <script lang="ts">
 	import { FileImportSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
-	import { type Sample, makeEmptySample } from '$lib/util';
+	import { type Sample, makeEmptySample, type Experiment, type TsvRow, makeEmptyExperiment } from '$lib/util';
 
 	let {
-		samples = $bindable([])
+		samples = $bindable([]),
+		experiment = $bindable()
 	}: {
 		samples: Array<Sample>;
+		experiment: Experiment;
 	} = $props();
 
 	let files: FileList | undefined = $state(undefined);
@@ -25,11 +27,22 @@
 			}
 			const headers = lines[0];
 			for (const line of lines.slice(1)) {
-				const sample: Sample = makeEmptySample();
+				// read tsv row
+				let tsvRow: Record<string, string> = {};
 				for (let j = 0; j < Math.min(headers.length, line.length); j++) {
-					sample[headers[j]] = line[j];
+					tsvRow[headers[j]] = line[j];
+				}
+				// create empty sample and update with data from row
+				const sample: Sample = makeEmptySample();
+				for (const key of Object.keys(sample)) {
+					sample[key as keyof Sample] = tsvRow?.[key];
 				}
 				samples.push(sample as Sample);
+				// create empty experiment and update with data from row
+				experiment = makeEmptyExperiment();
+				for (const key of Object.keys(experiment)) {
+					experiment[key as keyof Experiment] = tsvRow?.[key];
+				}
 			}
 		}
 	}
