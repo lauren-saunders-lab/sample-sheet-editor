@@ -3,10 +3,13 @@ const nRows = 8;
 
 type SeqType = 'p5' | 'p7' | 'rt';
 
-type Sample = {
-	path_fastq?: string;
-	path_bcl?: string;
+type Experiment = {
 	experiment_name: string;
+	path_fastq: string;
+	path_bcl: string;
+}
+
+type Sample = {
 	sample_name: string;
 	species: string;
 	n_expected_cells: string;
@@ -16,7 +19,9 @@ type Sample = {
 	hashing?: string;
 };
 
-const sampleHeaders = [
+type TsvRow = Experiment & Sample;
+
+const tsvHeaders: Array<keyof TsvRow> = [
 	'path_fastq',
 	'path_bcl',
 	'experiment_name',
@@ -31,9 +36,6 @@ const sampleHeaders = [
 
 function makeDefaultSample(): Sample {
 	return {
-		path_fastq: 'data',
-		path_bcl: 'data',
-		experiment_name: 'experiment',
 		sample_name: 'sample',
 		species: 'mouse',
 		n_expected_cells: '100',
@@ -44,10 +46,16 @@ function makeDefaultSample(): Sample {
 	};
 }
 
+function makeDefaultExperiment() {
+	return { path_fastq: '/data', path_bcl: '/data', experiment_name: 'experiment' };
+}
+
+function makeEmptyExperiment() {
+	return { path_fastq: '', path_bcl: '', experiment_name: '' };
+}
+
 function makeEmptySample(): Sample {
 	return {
-		path_fastq: '',
-		experiment_name: '',
 		sample_name: '',
 		species: '',
 		n_expected_cells: '',
@@ -155,11 +163,15 @@ function additionalSelectionValid(
 }
 
 export {
+	type Experiment,
 	type Sample,
 	type SeqType,
+	type TsvRow,
 	parse,
-	sampleHeaders,
+	tsvHeaders,
 	makeDefaultSample,
+	makeDefaultExperiment,
+	makeEmptyExperiment,
 	makeEmptySample,
 	additionalSelectionValid
 };

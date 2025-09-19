@@ -4,21 +4,28 @@
 	import { FloppyDiskSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
 	import FileSaver from 'file-saver';
-	import { sampleHeaders, type Sample } from '$lib/util';
+	import { tsvHeaders, type Sample, type Experiment, type TsvRow } from '$lib/util';
 
 	let {
-		samples = $bindable([])
+		samples = $bindable([]),
+		experiment = $bindable()
 	}: {
 		samples: Array<Sample>;
+		experiment: Experiment;
 	} = $props();
 
 	function onclick() {
-		let lines = [sampleHeaders.join('\t')];
+		let lines = [tsvHeaders.join('\t')];
 		for (const sample of samples) {
+			let tsvRow = sample as TsvRow;
+			// set experiment data that applies to all samples
+			for(const [key, value] of Object.entries(experiment) ) {
+				tsvRow[key as keyof Experiment] = value;
+			}
 			lines.push(
-				sampleHeaders
+				tsvHeaders
 					.map((header) => {
-						return sample[header as keyof Sample] ?? '';
+						return tsvRow[header] ?? '';
 					})
 					.join('\t')
 			);
