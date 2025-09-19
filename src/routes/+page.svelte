@@ -10,6 +10,10 @@
 
 	let samples = $state([makeDefaultSample()]);
 	let experiment = $state(makeDefaultExperiment());
+	let num_plates = $state(1);
+	let plates_indices = $derived(
+		num_plates > 0 ? Array.from({ length: num_plates }, (_, i) => i) : [0]
+	);
 </script>
 
 <Banner dismissable={false} class="fixed bg-[#d2d2d2]">
@@ -17,11 +21,17 @@
 	<h1 class="font-bold">{experiment.experiment_name}</h1>
 </Banner>
 <div class="my-20 p-4">
-	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 pb-4">
+	<div class="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-2">
 		<div>
 			<Label>
 				Experiment name
 				<Input bind:value={experiment.experiment_name} />
+			</Label>
+		</div>
+		<div>
+			<Label>
+				Number of plates
+				<Input bind:value={num_plates} type="number" />
 			</Label>
 		</div>
 		<div>
@@ -41,7 +51,7 @@
 		{#each samples as sample, sample_index (sample_index)}
 			<AccordionItem open>
 				{#snippet header()}{sample.sample_name}{/snippet}
-				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 pb-4">
+				<div class="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-2">
 					<div>
 						<Label>
 							Sample name
@@ -56,8 +66,8 @@
 					</div>
 					<div>
 						<Label>
-							Num expected cells
-							<Input bind:value={sample.n_expected_cells} />
+							Cells per well
+							<Input type="number" bind:value={sample.cells_per_well} />
 						</Label>
 					</div>
 					<div>
@@ -70,9 +80,9 @@
 				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
 					<Plate bind:str={sample.p5} type="p5" />
 					<Plate bind:str={sample.p7} type="p7" />
-					<!-- TODO: Can there be more than two plates for RT? -->
-					<Plate bind:str={sample.rt} type="rt" plate_index={0} />
-					<Plate bind:str={sample.rt} type="rt" plate_index={1} />
+					{#each plates_indices as plate_index}
+						<Plate bind:str={sample.rt} type="rt" {plate_index} />
+					{/each}
 				</div>
 			</AccordionItem>
 		{/each}
@@ -88,4 +98,4 @@
 		</Button>
 	</Accordion>
 </div>
-<BottomNavBar bind:samples bind:experiment />
+<BottomNavBar bind:samples bind:experiment bind:num_plates />
