@@ -5,11 +5,12 @@
 	import BottomNavItemNew from '$lib/components/BottomNavItemNew.svelte';
 	import BottomNavItemSave from '$lib/components/BottomNavItemSave.svelte';
 	import { BottomNav, Tooltip } from 'flowbite-svelte';
+	import { type Sample } from '$lib/util';
 
 	let {
 		samples = $bindable([])
 	}: {
-		samples: Array<Array<string>>;
+		samples: Array<Sample>;
 	} = $props();
 </script>
 
