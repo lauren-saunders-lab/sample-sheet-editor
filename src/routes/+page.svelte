@@ -50,6 +50,12 @@
 							<Input bind:value={sample.n_expected_cells} />
 						</Label>
 					</div>
+					<div>
+						<Label>
+							Hashing sheet (optional)
+							<Input bind:value={sample.hashing} />
+						</Label>
+					</div>
 					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
 						<Plate bind:str={sample.p5} type="p5" />
 						<Plate bind:str={sample.p7} type="p7" />

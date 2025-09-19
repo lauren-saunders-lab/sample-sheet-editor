@@ -21,12 +21,12 @@
 			const txt = await target.files[0].text();
 			let lines = [];
 			for (const line of txt.trim().split('\n')) {
-				lines.push(line.split('\t').map(l => l.trim()));
+				lines.push(line.split('\t').map((l) => l.trim()));
 			}
 			const headers = lines[0];
 			for (const line of lines.slice(1)) {
 				const sample: Sample = makeEmptySample();
-				for(let j=0; j<Math.min(headers.length, line.length); j++) {
+				for (let j = 0; j < Math.min(headers.length, line.length); j++) {
 					sample[headers[j]] = line[j];
 				}
 				samples.push(sample as Sample);
