@@ -49,19 +49,6 @@ function makeDefaultSample(): Sample {
 	};
 }
 
-function makeDefaultExperiment() {
-	return {
-		path_fastq: '/data',
-		path_bcl: '/data',
-		experiment_name: 'experiment',
-		global_p5_p7: false
-	};
-}
-
-function makeEmptyExperiment() {
-	return { path_fastq: '', path_bcl: '', experiment_name: '', global_p5_p7: false };
-}
-
 function makeEmptySample(): Sample {
 	return {
 		sample_name: '',
@@ -70,8 +57,22 @@ function makeEmptySample(): Sample {
 		p5: '',
 		p7: '',
 		rt: '',
+		hashing: '',
 		cells_per_well: 0
 	};
+}
+
+function makeDefaultExperiment(): Experiment {
+	return {
+		path_fastq: '/data',
+		path_bcl: '/data',
+		experiment_name: 'experiment',
+		global_p5_p7: false
+	};
+}
+
+function makeEmptyExperiment(): Experiment {
+	return { path_fastq: '', path_bcl: '', experiment_name: '', global_p5_p7: false };
 }
 
 function getPlateIndex(str: string, type: SeqType): number {
@@ -196,6 +197,74 @@ function count_rt_wells(str: string): number {
 	return sum;
 }
 
+function import_tsv(tsv: string) {
+	const experiment = makeEmptyExperiment();
+	const samples: Array<Sample> = [];
+	let num_plates = 1;
+	const lines = [];
+	for (const line of tsv.trim().split('\n')) {
+		lines.push(line.split('\t').map((l) => l.trim()));
+	}
+	const headers = lines[0];
+	for (const line of lines.slice(1)) {
+		// read tsv row
+		const tsvRow: Record<string, string> = {};
+		for (let j = 0; j < Math.min(headers.length, line.length); j++) {
+			tsvRow[headers[j]] = line[j];
+		}
+		// create empty sample and update with data from row
+		const sample: Sample = makeEmptySample();
+		for (const [key, value] of Object.entries(sample)) {
+			sample[key] = tsvRow?.[key] ?? value;
+		}
+		// calculate number of cells per well for this sample
+		sample.cells_per_well = Math.floor(
+			parseInt(tsvRow.n_expected_cells) / count_rt_wells(tsvRow.rt)
+		);
+		// ensure we display enough plates
+		num_plates = Math.max(num_plates, count_rt_plates(tsvRow.rt));
+		samples.push(sample);
+		// update experiment
+		for (const [key, value] of Object.entries(experiment)) {
+			experiment[key] = tsvRow?.[key] ?? value;
+		}
+	}
+	// if all samples have the same p5/p7 assume they are defined for the whole experiment
+	if (
+		samples.filter((e) => {
+			return e.p5 !== samples[0].p5 || e.p7 !== samples[0].p7;
+		}).length === 0
+	) {
+		experiment.global_p5_p7 = true;
+	}
+	return { experiment: experiment, samples: samples, num_plates: num_plates };
+}
+
+function export_tsv(experiment: Experiment, samples: Array<Sample>): string {
+	const lines = [tsvHeaders.join('\t')];
+	for (const sample of samples) {
+		// values set in experiment take precedence over those set in the sample
+		const tsvRow = { ...sample, ...experiment };
+		// if p5 and p7 are global, use the values from the first sample for all samples
+		if (experiment.global_p5_p7) {
+			tsvRow.p5 = samples[0].p5;
+			tsvRow.p7 = samples[0].p7;
+		}
+		// calculate number of cells
+		tsvRow.n_expected_cells = Math.floor(
+			tsvRow.cells_per_well * count_rt_wells(tsvRow.rt)
+		).toString();
+		lines.push(
+			tsvHeaders
+				.map((header) => {
+					return tsvRow[header] ?? '';
+				})
+				.join('\t')
+		);
+	}
+	return lines.join('\n');
+}
+
 export {
 	type Experiment,
 	type Sample,
@@ -209,5 +278,7 @@ export {
 	makeDefaultExperiment,
 	makeEmptyExperiment,
 	makeEmptySample,
-	additionalSelectionValid
+	additionalSelectionValid,
+	import_tsv,
+	export_tsv
 };

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parse, count_rt_wells, count_rt_plates, type SeqType } from '$lib/util';
+import {
+	parse,
+	count_rt_wells,
+	count_rt_plates,
+	type SeqType,
+	import_tsv,
+	export_tsv
+} from '$lib/util';
 
 function count_true(array: Array<Array<boolean>>): number {
 	return array.flat().filter((e) => e).length;
@@ -157,5 +164,82 @@ describe('count', () => {
 		const str = 'P01-A01:P01-H12,P02-A01:P02-H12,P03-A01:P03-H12,P04-A01:P04-H12';
 		expect(count_rt_plates(str)).toBe(4);
 		expect(count_rt_wells(str)).toBe(384);
+	});
+});
+
+describe('import_tsv / export_tsv', () => {
+	it('single sample', () => {
+		const str =
+			'p5\tp7\texperiment_name\tpath_fastq\tpath_bcl\tsample_name\tspecies\trt\thashing\tn_expected_cells\n' +
+			'A01\tB03,C04\texperiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tP01-A02,P01-B05:P01-C05\t\t99';
+		const { samples, experiment, num_plates } = import_tsv(str);
+		expect(num_plates).toBe(1);
+		expect(experiment.experiment_name).toBe('experiment');
+		expect(experiment.path_bcl).toBe('/data_bcl');
+		expect(experiment.path_fastq).toBe('/data_fastq');
+		expect(samples.length).toBe(1);
+		// sample 1
+		expect(samples[0].sample_name).toBe('sample1');
+		expect(samples[0].species).toBe('mouse');
+		expect(samples[0].hashing).toBe('');
+		expect(samples[0].n_expected_cells).toBe('99');
+		expect(samples[0].p5).toBe('A01');
+		expect(samples[0].p7).toBe('B03,C04');
+		expect(samples[0].rt).toBe('P01-A02,P01-B05:P01-C05');
+		// this is calculated by dividing n_expected_cells (99) by the number of selected rt wells (3):
+		expect(samples[0].cells_per_well).toBe(33);
+		// this is set to true if p5 and p7 are the same for all samples:
+		expect(experiment.global_p5_p7).toBe(true);
+
+		// round-trip export and import
+		const tsv = export_tsv(experiment, samples);
+		const round_trip = import_tsv(tsv);
+		expect(round_trip.samples).toEqual(samples);
+		expect(round_trip.experiment).toEqual(experiment);
+		expect(round_trip.num_plates).toEqual(num_plates);
+	});
+
+	it('two samples with different p5/p7, different column order', () => {
+		const str =
+			'experiment_name\tpath_fastq\tpath_bcl\tsample_name\tspecies\tp5\tp7\trt\thashing\tn_expected_cells\n' +
+			'experiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tA01\tB03,C04\tP01-A02,P01-B05:P01-C05\t\t27\n' +
+			'experiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tA09\tB01\tP02-H02:P02-H11\t\t100';
+		const { samples, experiment, num_plates } = import_tsv(str);
+		expect(num_plates).toBe(2);
+		expect(experiment.experiment_name).toBe('experiment');
+		expect(experiment.path_bcl).toBe('/data_bcl');
+		expect(experiment.path_fastq).toBe('/data_fastq');
+		expect(samples.length).toBe(2);
+		// sample 1
+		expect(samples[0].sample_name).toBe('sample1');
+		expect(samples[0].species).toBe('mouse');
+		expect(samples[0].hashing).toBe('');
+		expect(samples[0].n_expected_cells).toBe('27');
+		expect(samples[0].p5).toBe('A01');
+		expect(samples[0].p7).toBe('B03,C04');
+		expect(samples[0].rt).toBe('P01-A02,P01-B05:P01-C05');
+		// this is calculated by dividing n_expected_cells (27) by the number of selected rt wells (3):
+		expect(samples[0].cells_per_well).toBe(9);
+		// this is set to true if p5 and p7 are the same for all samples:
+		expect(experiment.global_p5_p7).toBe(false);
+		// sample 2
+		expect(samples[1].sample_name).toBe('sample1');
+		expect(samples[1].species).toBe('mouse');
+		expect(samples[1].hashing).toBe('');
+		expect(samples[1].n_expected_cells).toBe('100');
+		expect(samples[1].p5).toBe('A09');
+		expect(samples[1].p7).toBe('B01');
+		expect(samples[1].rt).toBe('P02-H02:P02-H11');
+		// this is calculated by dividing n_expected_cells (100) by the number of selected rt wells (10):
+		expect(samples[1].cells_per_well).toBe(10);
+		// this is set to true if p5 and p7 are the same for all samples:
+		expect(experiment.global_p5_p7).toBe(false);
+
+		// round-trip export and import
+		const tsv = export_tsv(experiment, samples);
+		const round_trip = import_tsv(tsv);
+		expect(round_trip.samples).toEqual(samples);
+		expect(round_trip.experiment).toEqual(experiment);
+		expect(round_trip.num_plates).toEqual(num_plates);
 	});
 });
