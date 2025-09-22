@@ -22,6 +22,10 @@
 			for (const [key, value] of Object.entries(experiment)) {
 				tsvRow[key as keyof Experiment] = value;
 			}
+			if (experiment.global_p5_p7) {
+				sample.p5 = samples[0].p5;
+				sample.p7 = samples[0].p7;
+			}
 			// calculate number of cells
 			tsvRow.n_expected_cells = Math.floor(
 				tsvRow.cells_per_well * count_rt_wells(tsvRow.rt)

@@ -2,7 +2,16 @@
 
 <script lang="ts">
 	import Plate from '$lib/components/Plate.svelte';
-	import { Banner, Label, Input, AccordionItem, Accordion, Button } from 'flowbite-svelte';
+	import {
+		Banner,
+		Card,
+		Label,
+		Input,
+		Checkbox,
+		AccordionItem,
+		Accordion,
+		Button
+	} from 'flowbite-svelte';
 	import { CirclePlusOutline } from 'flowbite-svelte-icons';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
 	import { makeDefaultExperiment, makeDefaultSample } from '$lib/util';
@@ -21,7 +30,9 @@
 	<h1 class="font-bold">{experiment.experiment_name}</h1>
 </Banner>
 <div class="my-20 p-4">
-	<div class="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-2">
+	<div
+		class="mb-8 grid grid-cols-1 gap-4 rounded-xl border-1 border-gray-200 p-4 lg:grid-cols-2 dark:border-b-gray-700"
+	>
 		<div>
 			<Label>
 				Experiment name
@@ -46,6 +57,15 @@
 				<Input bind:value={experiment.path_fastq} />
 			</Label>
 		</div>
+		<div class="col-span-2">
+			<Checkbox bind:checked={experiment.global_p5_p7}
+				>Use the same PCR indices for all samples</Checkbox
+			>
+		</div>
+		{#if experiment.global_p5_p7}
+			<Plate bind:str={samples[0].p5} type="p5" />
+			<Plate bind:str={samples[0].p7} type="p7" />
+		{/if}
 	</div>
 	<Accordion multiple>
 		{#each samples as sample, sample_index (sample_index)}
@@ -77,25 +97,27 @@
 						</Label>
 					</div>
 				</div>
-				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-4">
-					<Plate bind:str={sample.p5} type="p5" />
-					<Plate bind:str={sample.p7} type="p7" />
+				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+					{#if !experiment.global_p5_p7}
+						<Plate bind:str={sample.p5} type="p5" />
+						<Plate bind:str={sample.p7} type="p7" />
+					{/if}
 					{#each plates_indices as plate_index}
 						<Plate bind:str={sample.rt} type="rt" {plate_index} />
 					{/each}
 				</div>
 			</AccordionItem>
 		{/each}
-		<Button
-			class="m-2"
-			color="light"
-			size="xs"
-			onclick={() => {
-				samples.push(makeDefaultSample());
-			}}
-		>
-			<CirclePlusOutline class="me-2 h-5 w-5" /> Add sample
-		</Button>
 	</Accordion>
+	<Button
+		class="m-2"
+		color="light"
+		size="xs"
+		onclick={() => {
+			samples.push(makeDefaultSample());
+		}}
+	>
+		<CirclePlusOutline class="me-2 h-5 w-5" /> Add sample
+	</Button>
 </div>
 <BottomNavBar bind:samples bind:experiment bind:num_plates />
