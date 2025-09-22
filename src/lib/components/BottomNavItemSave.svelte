@@ -4,7 +4,7 @@
 	import { FloppyDiskSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
 	import FileSaver from 'file-saver';
-	import { tsvHeaders, type Sample, type Experiment, type TsvRow, count_rt_wells } from '$lib/util';
+	import { type Sample, type Experiment, export_tsv } from '$lib/util';
 
 	let {
 		samples = $bindable([]),
@@ -15,30 +15,7 @@
 	} = $props();
 
 	function onclick() {
-		let lines = [tsvHeaders.join('\t')];
-		for (const sample of samples) {
-			let tsvRow = sample as TsvRow;
-			// set experiment data that applies to all samples
-			for (const [key, value] of Object.entries(experiment)) {
-				tsvRow[key as keyof Experiment] = value;
-			}
-			if (experiment.global_p5_p7) {
-				sample.p5 = samples[0].p5;
-				sample.p7 = samples[0].p7;
-			}
-			// calculate number of cells
-			tsvRow.n_expected_cells = Math.floor(
-				tsvRow.cells_per_well * count_rt_wells(tsvRow.rt)
-			).toString();
-			lines.push(
-				tsvHeaders
-					.map((header) => {
-						return tsvRow[header] ?? '';
-					})
-					.join('\t')
-			);
-		}
-		let blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+		let blob = new Blob([export_tsv(experiment, samples)], { type: 'text/plain;charset=utf-8' });
 		FileSaver.saveAs(blob, 'samplesheet.tsv');
 	}
 </script>

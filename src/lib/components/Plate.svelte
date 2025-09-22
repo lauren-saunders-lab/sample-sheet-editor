@@ -1,7 +1,7 @@
 <svelte:options runes={true} />
 
 <script lang="ts">
-	import Cell from '$lib/components/Cell.svelte';
+	import Well from '$lib/components/Well.svelte';
 	import { additionalSelectionValid, parse, type SeqType } from '$lib/util';
 	import { Button } from 'flowbite-svelte';
 
@@ -111,13 +111,13 @@
 	>
 		{#each rows as row, row_index (row)}
 			{#each cols as col, col_index (col)}
-				<Cell
+				<Well
 					{color}
 					selected={array[row_index][col_index]}
 					selecting={selection_array[row_index][col_index]}
 					{cursor}
 					onmouseenter={() => mouseenter(row_index, col_index)}
-					onmousedown={() => mousedown(row_index, col_index)}>{row}{col}</Cell
+					onmousedown={() => mousedown(row_index, col_index)}>{row}{col}</Well
 				>
 			{/each}
 		{/each}
