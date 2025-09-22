@@ -4,7 +4,6 @@
 	import Plate from '$lib/components/Plate.svelte';
 	import {
 		Banner,
-		Card,
 		Label,
 		Input,
 		Checkbox,
@@ -14,15 +13,19 @@
 	} from 'flowbite-svelte';
 	import { CirclePlusOutline } from 'flowbite-svelte-icons';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
-	import { makeDefaultExperiment, makeDefaultSample } from '$lib/util';
+	import { getOccupiedWells, makeDefaultExperiment, makeDefaultSample } from '$lib/util';
 	import favicon from '$lib/assets/favicon.jpeg';
 
 	let samples = $state([makeDefaultSample()]);
 	let experiment = $state(makeDefaultExperiment());
 	let num_plates = $state(1);
-	let plates_indices = $derived(
-		num_plates > 0 ? Array.from({ length: num_plates }, (_, i) => i) : [0]
-	);
+	let occupied_wells = $derived.by(() => {
+		let occupied = [];
+		for (let plate_index = 0; plate_index < num_plates; plate_index++) {
+			occupied.push(getOccupiedWells(samples, plate_index));
+		}
+		return occupied;
+	});
 </script>
 
 <Banner dismissable={false} class="fixed bg-[#d2d2d2]">
@@ -63,8 +66,8 @@
 			>
 		</div>
 		{#if experiment.global_p5_p7}
-			<Plate bind:str={samples[0].p5} type="p5" />
-			<Plate bind:str={samples[0].p7} type="p7" />
+			<Plate bind:str={samples[0].p5} type="p5" occupied={occupied_wells[0]} />
+			<Plate bind:str={samples[0].p7} type="p7" occupied={occupied_wells[0]} />
 		{/if}
 	</div>
 	<Accordion multiple>
@@ -99,11 +102,11 @@
 				</div>
 				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 					{#if !experiment.global_p5_p7}
-						<Plate bind:str={sample.p5} type="p5" />
-						<Plate bind:str={sample.p7} type="p7" />
+						<Plate bind:str={sample.p5} type="p5" occupied={occupied_wells[0]} />
+						<Plate bind:str={sample.p7} type="p7" occupied={occupied_wells[0]} />
 					{/if}
-					{#each plates_indices as plate_index}
-						<Plate bind:str={sample.rt} type="rt" {plate_index} />
+					{#each occupied_wells as occupied, plate_index (plate_index)}
+						<Plate bind:str={sample.rt} type="rt" {plate_index} {occupied} />
 					{/each}
 				</div>
 			</AccordionItem>

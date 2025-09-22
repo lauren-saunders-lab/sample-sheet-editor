@@ -110,8 +110,12 @@ function getColIndex(str: string, type: SeqType): number {
 	return -1;
 }
 
-function parse(str: string, type: SeqType, plate_index: number = 0): Array<Array<boolean>> {
-	const array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
+function parse(
+	str: string,
+	type: SeqType,
+	plate_index: number = 0,
+	array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false))
+): Array<Array<boolean>> {
 	for (const region of str.split(',')) {
 		if (region === '') {
 			return array;
@@ -155,22 +159,42 @@ function parse(str: string, type: SeqType, plate_index: number = 0): Array<Array
 	return array;
 }
 
+function getOccupiedWells(samples: Array<Sample>, plate_index: number): Array<Array<boolean>> {
+	let occupied = parse(samples[0].rt, 'rt', plate_index);
+	if (plate_index === 0) {
+		occupied = parse(samples[0].p5, 'p5', plate_index, occupied);
+		occupied = parse(samples[0].p7, 'p7', plate_index, occupied);
+	}
+	for (const sample of samples.slice(1)) {
+		occupied = parse(sample.rt, 'rt', plate_index, occupied);
+	}
+	return occupied;
+}
+
 function additionalSelectionValid(
 	str: string,
 	additional_str: string,
 	type: SeqType,
-	plate_index: number = 0
+	plate_index: number = 0,
+	occupied: Array<Array<boolean>>
 ): boolean {
-	const a = parse(str, type, plate_index);
-	const b = parse(additional_str, type, plate_index);
+	const existing_wells = parse(str, type, plate_index);
+	const new_wells = parse(additional_str, type, plate_index);
+	let no_op = true;
 	for (let col = 0; col < nCols; col++) {
 		for (let row = 0; row < nRows; row++) {
-			if (!a[row][col] && b[row][col]) {
-				return true;
+			if (new_wells[row][col] && occupied[row][col]) {
+				// selection is invalid if it includes a well that is already taken by another sample
+				return false;
+			}
+			if (!existing_wells[row][col] && new_wells[row][col]) {
+				// if a new well differs from the existing well this is not a no-op
+				no_op = false;
 			}
 		}
 	}
-	return false;
+	// selection is only valid if it modifies the existing selection
+	return !no_op;
 }
 
 function count_rt_plates(str: string): number {
@@ -279,6 +303,7 @@ export {
 	makeEmptyExperiment,
 	makeEmptySample,
 	additionalSelectionValid,
+	getOccupiedWells,
 	import_tsv,
 	export_tsv
 };
