@@ -60,6 +60,14 @@
 					experiment[key as keyof Experiment] = tsvRow?.[key];
 				}
 			}
+			// if all samples have the same p5/p7 assume they are defined for the whole experiment
+			if (
+				samples.filter((e) => {
+					return e.p5 !== samples[0].p5 || e.p7 !== samples[0].p7;
+				}).length === 0
+			) {
+				experiment.global_p5_p7 = true;
+			}
 		}
 	}
 </script>

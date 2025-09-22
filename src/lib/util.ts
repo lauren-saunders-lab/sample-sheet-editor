@@ -7,6 +7,7 @@ type Experiment = {
 	experiment_name: string;
 	path_fastq: string;
 	path_bcl: string;
+	global_p5_p7: boolean;
 };
 
 type Sample = {
@@ -37,7 +38,7 @@ const tsvHeaders: Array<keyof TsvRow> = [
 
 function makeDefaultSample(): Sample {
 	return {
-		sample_name: 'sample',
+		sample_name: 'sample1',
 		species: 'mouse',
 		n_expected_cells: '100',
 		p5: '',
@@ -49,11 +50,16 @@ function makeDefaultSample(): Sample {
 }
 
 function makeDefaultExperiment() {
-	return { path_fastq: '/data', path_bcl: '/data', experiment_name: 'experiment' };
+	return {
+		path_fastq: '/data',
+		path_bcl: '/data',
+		experiment_name: 'experiment',
+		global_p5_p7: false
+	};
 }
 
 function makeEmptyExperiment() {
-	return { path_fastq: '', path_bcl: '', experiment_name: '' };
+	return { path_fastq: '', path_bcl: '', experiment_name: '', global_p5_p7: false };
 }
 
 function makeEmptySample(): Sample {
