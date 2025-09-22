@@ -1,8 +1,8 @@
-# sci-rocket sample-sheet editor
+# sci-rocket [sample-sheet editor](https://lauren-saunders-lab.github.io/sample-sheet-editor/)
 
-An online tool for creating, viewing and editing [sci-rocket](https://odomlab2.github.io/sci-rocket/) [sample-sheets](https://odomlab2.github.io/sci-rocket/overview_files/).
+An online tool for creating, viewing and editing [sci-rocket](https://lauren-saunders-lab.github.io/sci-rocket/) [sample-sheets](https://lauren-saunders-lab.github.io/sci-rocket/overview_files/).
 
-Temporary URL: https://www.keegan.ch/sample-sheet-editor
+[lauren-saunders-lab.github.io/sample-sheet-editor](https://lauren-saunders-lab.github.io/sample-sheet-editor/)
 
 ## Local development
 
