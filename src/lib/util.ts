@@ -7,7 +7,7 @@ type Experiment = {
 	experiment_name: string;
 	path_fastq: string;
 	path_bcl: string;
-}
+};
 
 type Sample = {
 	sample_name: string;
@@ -17,6 +17,7 @@ type Sample = {
 	p7: string;
 	rt: string;
 	hashing?: string;
+	cells_per_well: number;
 };
 
 type TsvRow = Experiment & Sample;
@@ -42,7 +43,8 @@ function makeDefaultSample(): Sample {
 		p5: '',
 		p7: '',
 		rt: '',
-		hashing: ''
+		hashing: '',
+		cells_per_well: 1000
 	};
 }
 
@@ -61,11 +63,13 @@ function makeEmptySample(): Sample {
 		n_expected_cells: '',
 		p5: '',
 		p7: '',
-		rt: ''
+		rt: '',
+		cells_per_well: 0
 	};
 }
 
 function getPlateIndex(str: string, type: SeqType): number {
+	// returns zero-based index of plate
 	if (type !== 'rt') {
 		return 0;
 	}
@@ -162,12 +166,38 @@ function additionalSelectionValid(
 	return false;
 }
 
+function count_rt_plates(str: string): number {
+	// returns the number of plates needed to display the given string
+	const regex = /P(\d{2})-/g;
+	let match;
+	let count = 1;
+	while ((match = regex.exec(str)) !== null) {
+		// We want to find the plate with the highest index
+		count = Math.max(count, parseInt(match[1]));
+	}
+	return count;
+}
+
+function count_rt_wells(str: string): number {
+	const type = 'rt';
+	const max_plate_index = count_rt_plates(str);
+	let sum = 0;
+	for (let plate_index = 0; plate_index < max_plate_index; plate_index++) {
+		sum += parse(str, type, plate_index)
+			.flat()
+			.filter((e) => e).length;
+	}
+	return sum;
+}
+
 export {
 	type Experiment,
 	type Sample,
 	type SeqType,
 	type TsvRow,
 	parse,
+	count_rt_wells,
+	count_rt_plates,
 	tsvHeaders,
 	makeDefaultSample,
 	makeDefaultExperiment,
