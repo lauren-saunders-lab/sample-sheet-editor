@@ -159,14 +159,22 @@ function parse(
 	return array;
 }
 
+function remove_plate(str: string, plate_index: number): string {
+	// remove all assignments to the given plate from the string, where plate_index is 0-based
+	const plate = `P${String(plate_index + 1).padStart(2, '0')}`;
+	const regex = new RegExp(`${plate}-.{3}(?:,|:|$)`, 'g');
+	// remove any trailing commas
+	return str.replace(regex, '').split(',').filter(Boolean).join(',');
+}
+
 function getOccupiedWells(samples: Array<Sample>, plate_index: number): Array<Array<boolean>> {
-	let occupied = parse(samples[0].rt, 'rt', plate_index);
-	if (plate_index === 0) {
-		occupied = parse(samples[0].p5, 'p5', plate_index, occupied);
-		occupied = parse(samples[0].p7, 'p7', plate_index, occupied);
-	}
-	for (const sample of samples.slice(1)) {
+	let occupied = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
+	for (const sample of samples) {
 		occupied = parse(sample.rt, 'rt', plate_index, occupied);
+		if (plate_index === 0) {
+			occupied = parse(sample.p5, 'p5', plate_index, occupied);
+			occupied = parse(sample.p7, 'p7', plate_index, occupied);
+		}
 	}
 	return occupied;
 }
@@ -304,6 +312,7 @@ export {
 	makeEmptySample,
 	additionalSelectionValid,
 	getOccupiedWells,
+	remove_plate,
 	import_tsv,
 	export_tsv
 };
