@@ -3,6 +3,7 @@ import {
 	parse,
 	count_rt_wells,
 	count_rt_plates,
+	remove_plate,
 	type SeqType,
 	import_tsv,
 	export_tsv
@@ -164,6 +165,22 @@ describe('count', () => {
 		const str = 'P01-A01:P01-H12,P02-A01:P02-H12,P03-A01:P03-H12,P04-A01:P04-H12';
 		expect(count_rt_plates(str)).toBe(4);
 		expect(count_rt_wells(str)).toBe(384);
+	});
+});
+
+describe('remove_plate', () => {
+	it('removes P02', () => {
+		expect(remove_plate('P01-A02,P02-B05:P02-C05,P02-A02,P01-B05:P01-C05', 1)).toBe(
+			'P01-A02,P01-B05:P01-C05'
+		);
+		expect(remove_plate('P01-A02,P02-B05:P02-C05,P01-B05:P01-C05,P02-A02', 1)).toBe(
+			'P01-A02,P01-B05:P01-C05'
+		);
+	});
+	it('removes P01', () => {
+		expect(remove_plate('P01-A02,P02-B05:P02-C05,P02-A02,P01-B05:P01-C05', 0)).toBe(
+			'P02-B05:P02-C05,P02-A02'
+		);
 	});
 });
 

@@ -3,17 +3,22 @@
 <script lang="ts">
 	import Plate from '$lib/components/Plate.svelte';
 	import {
-		Banner,
-		Label,
-		Input,
-		Checkbox,
-		AccordionItem,
 		Accordion,
-		Button
+		AccordionItem,
+		Banner,
+		Button,
+		Checkbox,
+		Input,
+		Label
 	} from 'flowbite-svelte';
-	import { CirclePlusOutline } from 'flowbite-svelte-icons';
+	import { GridPlusSolid, CirclePlusSolid, TrashBinSolid } from 'flowbite-svelte-icons';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
-	import { getOccupiedWells, makeDefaultExperiment, makeDefaultSample } from '$lib/util';
+	import {
+		getOccupiedWells,
+		makeDefaultExperiment,
+		makeDefaultSample,
+		remove_plate
+	} from '$lib/util';
 	import favicon from '$lib/assets/favicon.jpeg';
 
 	let samples = $state([makeDefaultSample()]);
@@ -26,6 +31,17 @@
 		}
 		return occupied;
 	});
+
+	function remove_last_plate() {
+		const plate_index = num_plates - 1;
+		if (plate_index < 1) {
+			return;
+		}
+		for (const sample of samples) {
+			sample.rt = remove_plate(sample.rt, plate_index);
+		}
+		--num_plates;
+	}
 </script>
 
 <Banner dismissable={false} class="fixed bg-[#d2d2d2]">
@@ -40,12 +56,6 @@
 			<Label>
 				Experiment name
 				<Input bind:value={experiment.experiment_name} />
-			</Label>
-		</div>
-		<div>
-			<Label>
-				Number of plates
-				<Input bind:value={num_plates} type="number" />
 			</Label>
 		</div>
 		<div>
@@ -108,19 +118,43 @@
 					{#each occupied_wells as occupied, plate_index (plate_index)}
 						<Plate bind:str={sample.rt} type="rt" {plate_index} {occupied} />
 					{/each}
+					<div class="">
+						<Button
+							color="light"
+							class="m-2 w-full p-2"
+							disabled={num_plates === 1}
+							onclick={remove_last_plate}
+						>
+							<TrashBinSolid
+								class="mr-1 mb-1 h-6 w-6 text-gray-500 group-hover:text-primary-600 dark:text-gray-400 dark:group-hover:text-primary-500"
+							/>
+							Remove plate
+						</Button>
+						<Button
+							color="light"
+							class="m-2 w-full p-2"
+							onclick={() => {
+								++num_plates;
+							}}
+						>
+							<GridPlusSolid
+								class="mr-1 mb-1 h-6 w-6 text-gray-500 group-hover:text-primary-600 dark:text-gray-400 dark:group-hover:text-primary-500"
+							/>
+							Add plate
+						</Button>
+					</div>
 				</div>
 			</AccordionItem>
 		{/each}
 	</Accordion>
 	<Button
-		class="m-2"
+		class="mt-8 w-full"
 		color="light"
-		size="xs"
 		onclick={() => {
 			samples.push(makeDefaultSample());
 		}}
 	>
-		<CirclePlusOutline class="me-2 h-5 w-5" /> Add sample
+		<CirclePlusSolid class="me-2 h-5 w-5" /> Add sample
 	</Button>
 </div>
 <BottomNavBar bind:samples bind:experiment bind:num_plates />

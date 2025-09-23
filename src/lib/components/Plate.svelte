@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import Well from '$lib/components/Well.svelte';
-	import { additionalSelectionValid, parse, type SeqType } from '$lib/util';
+	import { additionalSelectionValid, parse, type SeqType, remove_plate } from '$lib/util';
 	import { Button } from 'flowbite-svelte';
 
 	interface Props {
@@ -32,9 +32,10 @@
 	let selection_start_row = $state('');
 	let selection_start_col = $state('');
 	let selection_end = $state('');
+	let plate_prefix = $derived(type === 'rt' ? `P${String(plate_index + 1).padStart(2, '0')}-` : '');
 	let selection = $derived.by(() => {
-		const start = `${selection_start && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_start}`;
-		const end = `${selection_end && type === 'rt' ? `P${cols[plate_index]}-` : ''}${selection_end}`;
+		const start = `${selection_start ? plate_prefix : ''}${selection_start}`;
+		const end = `${selection_end ? plate_prefix : ''}${selection_end}`;
 		return [start, end].filter(Boolean).join(':');
 	});
 	let selection_array = $derived(parse(selection, type, plate_index));
@@ -96,13 +97,13 @@
 	<div class="mb-2 flex flex-row items-stretch">
 		<h1 class={`mr-2 w-full rounded text-center text-lg font-extrabold ${color}`}>
 			{type}
-			{type === 'rt' ? `P${cols[plate_index]}` : ''}
+			{plate_prefix.slice(0, -1)}
 		</h1>
 		<Button
 			color="light"
 			size="xs"
 			onclick={() => {
-				str = '';
+				str = remove_plate(str, plate_index);
 			}}>Clear</Button
 		>
 	</div>
