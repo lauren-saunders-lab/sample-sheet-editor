@@ -4,7 +4,7 @@
 	import { FloppyDiskSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
 	import FileSaver from 'file-saver';
-	import { type Sample, type Experiment, export_tsv } from '$lib/util';
+	import { type Sample, type Experiment, exportTsv } from '$lib/util';
 
 	let {
 		samples = $bindable([]),
@@ -15,7 +15,7 @@
 	} = $props();
 
 	function onclick() {
-		let blob = new Blob([export_tsv(experiment, samples)], { type: 'text/plain;charset=utf-8' });
+		let blob = new Blob([exportTsv(experiment, samples)], { type: 'text/plain;charset=utf-8' });
 		FileSaver.saveAs(blob, 'samplesheet.tsv');
 	}
 </script>
