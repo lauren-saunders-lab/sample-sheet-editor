@@ -10,18 +10,18 @@
 	let {
 		samples = $bindable([]),
 		experiment = $bindable(),
-		num_plates = $bindable()
+		numPlates = $bindable()
 	}: {
 		samples: Array<Sample>;
 		experiment: Experiment;
-		num_plates: number;
+		numPlates: number;
 	} = $props();
 </script>
 
 <BottomNav position="fixed" navType="border" classes={{ inner: 'grid-cols-3' }}>
-	<BottomNavItemNew bind:samples bind:experiment bind:num_plates />
+	<BottomNavItemNew bind:samples bind:experiment bind:numPlates />
 	<Tooltip arrow={false}>Create a new sample-sheet</Tooltip>
-	<BottomNavItemOpen bind:samples bind:experiment bind:num_plates />
+	<BottomNavItemOpen bind:samples bind:experiment bind:numPlates />
 	<Tooltip arrow={false}>Open an existing sample-sheet</Tooltip>
 	<BottomNavItemSave bind:samples bind:experiment />
 	<Tooltip arrow={false}>Save the sample-sheet</Tooltip>

@@ -13,17 +13,17 @@
 	let {
 		samples = $bindable([]),
 		experiment = $bindable(),
-		num_plates = $bindable()
+		numPlates = $bindable()
 	}: {
 		samples: Array<Sample>;
 		experiment: Experiment;
-		num_plates: number;
+		numPlates: number;
 	} = $props();
 
 	function onclick() {
 		samples = [makeDefaultSample()];
 		experiment = makeDefaultExperiment();
-		num_plates = 1;
+		numPlates = 1;
 	}
 </script>
 

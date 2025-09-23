@@ -80,9 +80,9 @@ function getPlateIndex(str: string, type: SeqType): number {
 	if (type !== 'rt') {
 		return 0;
 	}
-	const plate_index = parseInt(str.split('-')[0].substring(1), 10) - 1;
-	if (plate_index >= 0) {
-		return plate_index;
+	const plateIndex = parseInt(str.split('-')[0].substring(1), 10) - 1;
+	if (plateIndex >= 0) {
+		return plateIndex;
 	} else {
 		return -1;
 	}
@@ -113,7 +113,7 @@ function getColIndex(str: string, type: SeqType): number {
 function parse(
 	str: string,
 	type: SeqType,
-	plate_index: number = 0,
+	plateIndex: number = 0,
 	array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false))
 ): Array<Array<boolean>> {
 	for (const region of str.split(',')) {
@@ -132,7 +132,7 @@ function parse(
 			if (row < 0 || col < 0) {
 				return array;
 			}
-			if (getPlateIndex(start, type) === plate_index) {
+			if (getPlateIndex(start, type) === plateIndex) {
 				array[row][col] = true;
 			}
 		} else {
@@ -147,7 +147,7 @@ function parse(
 			if (rowStart > rowEnd || colStart > colEnd) {
 				return array;
 			}
-			if (getPlateIndex(start, type) === plate_index) {
+			if (getPlateIndex(start, type) === plateIndex) {
 				for (let row = rowStart; row <= rowEnd; ++row) {
 					for (let col = colStart; col <= colEnd; ++col) {
 						array[row][col] = true;
@@ -159,21 +159,21 @@ function parse(
 	return array;
 }
 
-function remove_plate(str: string, plate_index: number): string {
-	// remove all assignments to the given plate from the string, where plate_index is 0-based
-	const plate = `P${String(plate_index + 1).padStart(2, '0')}`;
+function removePlate(str: string, plateIndex: number): string {
+	// remove all assignments to the given plate from the string, where plateIndex is 0-based
+	const plate = `P${String(plateIndex + 1).padStart(2, '0')}`;
 	const regex = new RegExp(`${plate}-.{3}(?:,|:|$)`, 'g');
 	// remove any trailing commas
 	return str.replace(regex, '').split(',').filter(Boolean).join(',');
 }
 
-function getOccupiedWells(samples: Array<Sample>, plate_index: number): Array<Array<boolean>> {
+function getOccupiedWells(samples: Array<Sample>, plateIndex: number): Array<Array<boolean>> {
 	let occupied = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
 	for (const sample of samples) {
-		occupied = parse(sample.rt, 'rt', plate_index, occupied);
-		if (plate_index === 0) {
-			occupied = parse(sample.p5, 'p5', plate_index, occupied);
-			occupied = parse(sample.p7, 'p7', plate_index, occupied);
+		occupied = parse(sample.rt, 'rt', plateIndex, occupied);
+		if (plateIndex === 0) {
+			occupied = parse(sample.p5, 'p5', plateIndex, occupied);
+			occupied = parse(sample.p7, 'p7', plateIndex, occupied);
 		}
 	}
 	return occupied;
@@ -181,32 +181,32 @@ function getOccupiedWells(samples: Array<Sample>, plate_index: number): Array<Ar
 
 function additionalSelectionValid(
 	str: string,
-	additional_str: string,
+	additionalStr: string,
 	type: SeqType,
-	plate_index: number = 0,
+	plateIndex: number = 0,
 	occupied: Array<Array<boolean>>
 ): boolean {
-	const existing_wells = parse(str, type, plate_index);
-	const new_wells = parse(additional_str, type, plate_index);
-	let no_op = true;
+	const existingWells = parse(str, type, plateIndex);
+	const additionalWells = parse(additionalStr, type, plateIndex);
+	let isNoOp = true;
 	for (let col = 0; col < nCols; col++) {
 		for (let row = 0; row < nRows; row++) {
-			if (new_wells[row][col] && occupied[row][col]) {
+			if (additionalWells[row][col] && occupied[row][col]) {
 				// selection is invalid if it includes a well that is already taken by another sample
 				return false;
 			}
-			if (!existing_wells[row][col] && new_wells[row][col]) {
-				// if a new well differs from the existing well this is not a no-op
-				no_op = false;
+			if (!existingWells[row][col] && additionalWells[row][col]) {
+				// if an additional well differs from the existing well this is not a no-op
+				isNoOp = false;
 			}
 		}
 	}
-	// selection is only valid if it modifies the existing selection
-	return !no_op;
+	// additional selection is only valid if it modifies the existing selection
+	return !isNoOp;
 }
 
-function count_rt_plates(str: string): number {
-	// returns the number of plates needed to display the given string
+function countPlates(str: string): number {
+	// returns the number of plates needed to display the given rt string
 	const regex = /P(\d{2})-/g;
 	let match;
 	let count = 1;
@@ -217,22 +217,22 @@ function count_rt_plates(str: string): number {
 	return count;
 }
 
-function count_rt_wells(str: string): number {
+function countWells(str: string): number {
 	const type = 'rt';
-	const max_plate_index = count_rt_plates(str);
+	const maxPlateIndex = countPlates(str);
 	let sum = 0;
-	for (let plate_index = 0; plate_index < max_plate_index; plate_index++) {
-		sum += parse(str, type, plate_index)
+	for (let plateIndex = 0; plateIndex < maxPlateIndex; plateIndex++) {
+		sum += parse(str, type, plateIndex)
 			.flat()
 			.filter((e) => e).length;
 	}
 	return sum;
 }
 
-function import_tsv(tsv: string) {
+function importTsv(tsv: string) {
 	const experiment = makeEmptyExperiment();
 	const samples: Array<Sample> = [];
-	let num_plates = 1;
+	let numPlates = 1;
 	const lines = [];
 	for (const line of tsv.trim().split('\n')) {
 		lines.push(line.split('\t').map((l) => l.trim()));
@@ -251,10 +251,10 @@ function import_tsv(tsv: string) {
 		}
 		// calculate number of cells per well for this sample
 		sample.cells_per_well = Math.floor(
-			parseInt(tsvRow.n_expected_cells) / count_rt_wells(tsvRow.rt)
+			parseInt(tsvRow.n_expected_cells) / countWells(tsvRow.rt)
 		);
 		// ensure we display enough plates
-		num_plates = Math.max(num_plates, count_rt_plates(tsvRow.rt));
+		numPlates = Math.max(numPlates, countPlates(tsvRow.rt));
 		samples.push(sample);
 		// update experiment
 		for (const [key, value] of Object.entries(experiment)) {
@@ -269,10 +269,10 @@ function import_tsv(tsv: string) {
 	) {
 		experiment.global_p5_p7 = true;
 	}
-	return { experiment: experiment, samples: samples, num_plates: num_plates };
+	return { experiment: experiment, samples: samples, numPlates: numPlates };
 }
 
-function export_tsv(experiment: Experiment, samples: Array<Sample>): string {
+function exportTsv(experiment: Experiment, samples: Array<Sample>): string {
 	const lines = [tsvHeaders.join('\t')];
 	for (const sample of samples) {
 		// values set in experiment take precedence over those set in the sample
@@ -284,7 +284,7 @@ function export_tsv(experiment: Experiment, samples: Array<Sample>): string {
 		}
 		// calculate number of cells
 		tsvRow.n_expected_cells = Math.floor(
-			tsvRow.cells_per_well * count_rt_wells(tsvRow.rt)
+			tsvRow.cells_per_well * countWells(tsvRow.rt)
 		).toString();
 		lines.push(
 			tsvHeaders
@@ -303,8 +303,8 @@ export {
 	type SeqType,
 	type TsvRow,
 	parse,
-	count_rt_wells,
-	count_rt_plates,
+	countWells,
+	countPlates,
 	tsvHeaders,
 	makeDefaultSample,
 	makeDefaultExperiment,
@@ -312,7 +312,7 @@ export {
 	makeEmptySample,
 	additionalSelectionValid,
 	getOccupiedWells,
-	remove_plate,
-	import_tsv,
-	export_tsv
+	removePlate,
+	importTsv,
+	exportTsv
 };

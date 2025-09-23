@@ -3,16 +3,16 @@
 <script lang="ts">
 	import { FileImportSolid } from 'flowbite-svelte-icons';
 	import { BottomNavItem } from 'flowbite-svelte';
-	import { type Sample, type Experiment, import_tsv } from '$lib/util';
+	import { type Sample, type Experiment, importTsv } from '$lib/util';
 
 	let {
 		samples = $bindable([]),
 		experiment = $bindable(),
-		num_plates = $bindable()
+		numPlates = $bindable()
 	}: {
 		samples: Array<Sample>;
 		experiment: Experiment;
-		num_plates: number;
+		numPlates: number;
 	} = $props();
 
 	let files: FileList | undefined = $state(undefined);
@@ -21,7 +21,7 @@
 	async function onchange(event: Event) {
 		const target = event.target as HTMLInputElement;
 		if (target.files) {
-			({ samples, experiment, num_plates } = import_tsv(await target.files[0].text()));
+			({ samples, experiment, numPlates: numPlates } = importTsv(await target.files[0].text()));
 		}
 	}
 </script>

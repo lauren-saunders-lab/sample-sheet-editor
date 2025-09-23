@@ -17,30 +17,30 @@
 		getOccupiedWells,
 		makeDefaultExperiment,
 		makeDefaultSample,
-		remove_plate
+		removePlate
 	} from '$lib/util';
 	import favicon from '$lib/assets/favicon.jpeg';
 
 	let samples = $state([makeDefaultSample()]);
 	let experiment = $state(makeDefaultExperiment());
-	let num_plates = $state(1);
-	let occupied_wells = $derived.by(() => {
+	let numPlates = $state(1);
+	let occupiedWells = $derived.by(() => {
 		let occupied = [];
-		for (let plate_index = 0; plate_index < num_plates; plate_index++) {
-			occupied.push(getOccupiedWells(samples, plate_index));
+		for (let plateIndex = 0; plateIndex < numPlates; plateIndex++) {
+			occupied.push(getOccupiedWells(samples, plateIndex));
 		}
 		return occupied;
 	});
 
-	function remove_last_plate() {
-		const plate_index = num_plates - 1;
-		if (plate_index < 1) {
+	function removeLastPlate() {
+		const plateIndex = numPlates - 1;
+		if (plateIndex < 1) {
 			return;
 		}
 		for (const sample of samples) {
-			sample.rt = remove_plate(sample.rt, plate_index);
+			sample.rt = removePlate(sample.rt, plateIndex);
 		}
-		--num_plates;
+		--numPlates;
 	}
 </script>
 
@@ -76,12 +76,12 @@
 			>
 		</div>
 		{#if experiment.global_p5_p7}
-			<Plate bind:str={samples[0].p5} type="p5" occupied={occupied_wells[0]} />
-			<Plate bind:str={samples[0].p7} type="p7" occupied={occupied_wells[0]} />
+			<Plate bind:str={samples[0].p5} type="p5" occupied={occupiedWells[0]} />
+			<Plate bind:str={samples[0].p7} type="p7" occupied={occupiedWells[0]} />
 		{/if}
 	</div>
 	<Accordion multiple>
-		{#each samples as sample, sample_index (sample_index)}
+		{#each samples as sample, sampleIndex (sampleIndex)}
 			<AccordionItem open>
 				{#snippet header()}{sample.sample_name}{/snippet}
 				<div class="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-2">
@@ -112,18 +112,18 @@
 				</div>
 				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 					{#if !experiment.global_p5_p7}
-						<Plate bind:str={sample.p5} type="p5" occupied={occupied_wells[0]} />
-						<Plate bind:str={sample.p7} type="p7" occupied={occupied_wells[0]} />
+						<Plate bind:str={sample.p5} type="p5" occupied={occupiedWells[0]} />
+						<Plate bind:str={sample.p7} type="p7" occupied={occupiedWells[0]} />
 					{/if}
-					{#each occupied_wells as occupied, plate_index (plate_index)}
-						<Plate bind:str={sample.rt} type="rt" {plate_index} {occupied} />
+					{#each occupiedWells as occupied, plateIndex (plateIndex)}
+						<Plate bind:str={sample.rt} type="rt" {plateIndex} {occupied} />
 					{/each}
 					<div class="">
 						<Button
 							color="light"
 							class="m-2 w-full p-2"
-							disabled={num_plates === 1}
-							onclick={remove_last_plate}
+							disabled={numPlates === 1}
+							onclick={removeLastPlate}
 						>
 							<TrashBinSolid
 								class="mr-1 mb-1 h-6 w-6 text-gray-500 group-hover:text-primary-600 dark:text-gray-400 dark:group-hover:text-primary-500"
@@ -134,7 +134,7 @@
 							color="light"
 							class="m-2 w-full p-2"
 							onclick={() => {
-								++num_plates;
+								++numPlates;
 							}}
 						>
 							<GridPlusSolid
@@ -157,4 +157,4 @@
 		<CirclePlusSolid class="me-2 h-5 w-5" /> Add sample
 	</Button>
 </div>
-<BottomNavBar bind:samples bind:experiment bind:num_plates />
+<BottomNavBar bind:samples bind:experiment bind:numPlates />

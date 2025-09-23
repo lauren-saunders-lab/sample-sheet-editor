@@ -2,17 +2,17 @@
 
 <script lang="ts">
 	import Well from '$lib/components/Well.svelte';
-	import { additionalSelectionValid, parse, type SeqType, remove_plate } from '$lib/util';
+	import { additionalSelectionValid, parse, type SeqType, removePlate } from '$lib/util';
 	import { Button } from 'flowbite-svelte';
 
 	interface Props {
 		str: string;
 		type: SeqType;
-		plate_index?: number;
+		plateIndex?: number;
 		occupied: Array<Array<boolean>>;
 	}
 
-	let { str = $bindable(''), type, plate_index = 0, occupied }: Props = $props();
+	let { str = $bindable(''), type, plateIndex = 0, occupied }: Props = $props();
 
 	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 	const cols = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
@@ -28,22 +28,22 @@
 		}
 	});
 
-	let selection_start = $state('');
-	let selection_start_row = $state('');
-	let selection_start_col = $state('');
-	let selection_end = $state('');
-	let plate_prefix = $derived(type === 'rt' ? `P${String(plate_index + 1).padStart(2, '0')}-` : '');
+	let selectionStart = $state('');
+	let selectionStartRow = $state('');
+	let selectionStartCol = $state('');
+	let selectionEnd = $state('');
+	let platePrefix = $derived(type === 'rt' ? `P${String(plateIndex + 1).padStart(2, '0')}-` : '');
 	let selection = $derived.by(() => {
-		const start = `${selection_start ? plate_prefix : ''}${selection_start}`;
-		const end = `${selection_end ? plate_prefix : ''}${selection_end}`;
+		const start = `${selectionStart ? platePrefix : ''}${selectionStart}`;
+		const end = `${selectionEnd ? platePrefix : ''}${selectionEnd}`;
 		return [start, end].filter(Boolean).join(':');
 	});
-	let selection_array = $derived(parse(selection, type, plate_index));
-	let array = $derived(parse(str, type, plate_index));
+	let selectionArray = $derived(parse(selection, type, plateIndex));
+	let array = $derived(parse(str, type, plateIndex));
 	let selecting = $state(false);
 	let cursor = $state('cursor-pointer');
 
-	function mousedown(row_index: number, col_index: number, disabled: boolean) {
+	function mousedown(rowIndex: number, colIndex: number, disabled: boolean) {
 		if (!disabled && !selecting) {
 			selecting = true;
 			if (type === 'p5') {
@@ -55,40 +55,40 @@
 			} else if (type === 'rt') {
 				cursor = 'cursor-se-resize';
 			}
-			selection_start_row = rows[row_index];
-			selection_start_col = cols[col_index];
-			selection_start = `${selection_start_row}${selection_start_col}`;
-			selection_end = '';
+			selectionStartRow = rows[rowIndex];
+			selectionStartCol = cols[colIndex];
+			selectionStart = `${selectionStartRow}${selectionStartCol}`;
+			selectionEnd = '';
 		}
 	}
 
-	function mouseenter(row_index: number, col_index: number, disabled: boolean) {
+	function mouseenter(rowIndex: number, colIndex: number, disabled: boolean) {
 		if (!disabled && selecting) {
-			let new_selection_end = '';
+			let newSelectionEnd = '';
 			if (type === 'p5') {
 				// column only
-				new_selection_end = `${rows[row_index]}${selection_start_col}`;
+				newSelectionEnd = `${rows[rowIndex]}${selectionStartCol}`;
 			} else if (type === 'p7') {
 				// row only
-				new_selection_end = `${selection_start_row}${cols[col_index]}`;
+				newSelectionEnd = `${selectionStartRow}${cols[colIndex]}`;
 			} else if (type === 'rt') {
-				new_selection_end = `${rows[row_index]}${cols[col_index]}`;
+				newSelectionEnd = `${rows[rowIndex]}${cols[colIndex]}`;
 			}
-			if (new_selection_end !== selection_start) {
-				selection_end = new_selection_end;
+			if (newSelectionEnd !== selectionStart) {
+				selectionEnd = newSelectionEnd;
 			}
 		}
 	}
 
 	function onmouseup() {
 		if (selecting) {
-			if (additionalSelectionValid(str, selection, type, plate_index, occupied)) {
+			if (additionalSelectionValid(str, selection, type, plateIndex, occupied)) {
 				str = [str, selection].filter(Boolean).join(',');
 			}
 			selecting = false;
 			cursor = 'cursor-pointer';
-			selection_start = '';
-			selection_end = '';
+			selectionStart = '';
+			selectionEnd = '';
 		}
 	}
 </script>
@@ -97,13 +97,13 @@
 	<div class="mb-2 flex flex-row items-stretch">
 		<h1 class={`mr-2 w-full rounded text-center text-lg font-extrabold ${color}`}>
 			{type}
-			{plate_prefix.slice(0, -1)}
+			{platePrefix.slice(0, -1)}
 		</h1>
 		<Button
 			color="light"
 			size="xs"
 			onclick={() => {
-				str = remove_plate(str, plate_index);
+				str = removePlate(str, plateIndex);
 			}}>Clear</Button
 		>
 	</div>
@@ -111,16 +111,16 @@
 		class="grid grid-cols-12 content-center items-center justify-items-center gap-[1px]"
 		{onmouseup}
 	>
-		{#each rows as row, row_index (row)}
-			{#each cols as col, col_index (col)}
+		{#each rows as row, rowIndex (row)}
+			{#each cols as col, colIndex (col)}
 				<Well
 					{color}
-					selected={array[row_index][col_index]}
-					selecting={selection_array[row_index][col_index]}
-					disabled={occupied[row_index][col_index]}
-					cursor={occupied[row_index][col_index] ? 'cursor-not-allowed' : cursor}
-					onmouseenter={() => mouseenter(row_index, col_index, occupied[row_index][col_index])}
-					onmousedown={() => mousedown(row_index, col_index, occupied[row_index][col_index])}
+					selected={array[rowIndex][colIndex]}
+					selecting={selectionArray[rowIndex][colIndex]}
+					disabled={occupied[rowIndex][colIndex]}
+					cursor={occupied[rowIndex][colIndex] ? 'cursor-not-allowed' : cursor}
+					onmouseenter={() => mouseenter(rowIndex, colIndex, occupied[rowIndex][colIndex])}
+					onmousedown={() => mousedown(rowIndex, colIndex, occupied[rowIndex][colIndex])}
 					>{row}{col}</Well
 				>
 			{/each}
