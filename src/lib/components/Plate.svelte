@@ -9,10 +9,9 @@
 		str: string;
 		type: SeqType;
 		plateIndex?: number;
-		occupied: Array<Array<boolean>>;
 	}
 
-	let { str = $bindable(''), type, plateIndex = 0, occupied }: Props = $props();
+	let { str = $bindable(''), type, plateIndex = 0 }: Props = $props();
 
 	const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 	const cols = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
@@ -43,8 +42,8 @@
 	let selecting = $state(false);
 	let cursor = $state('cursor-pointer');
 
-	function mousedown(rowIndex: number, colIndex: number, disabled: boolean) {
-		if (!disabled && !selecting) {
+	function mousedown(rowIndex: number, colIndex: number) {
+		if (!selecting) {
 			selecting = true;
 			if (type === 'p5') {
 				// column only
@@ -62,8 +61,8 @@
 		}
 	}
 
-	function mouseenter(rowIndex: number, colIndex: number, disabled: boolean) {
-		if (!disabled && selecting) {
+	function mouseenter(rowIndex: number, colIndex: number) {
+		if (selecting) {
 			let newSelectionEnd = '';
 			if (type === 'p5') {
 				// column only
@@ -82,7 +81,7 @@
 
 	function onmouseup() {
 		if (selecting) {
-			if (additionalSelectionValid(str, selection, type, plateIndex, occupied)) {
+			if (additionalSelectionValid(str, selection, type, plateIndex)) {
 				str = [str, selection].filter(Boolean).join(',');
 			}
 			selecting = false;
@@ -117,10 +116,9 @@
 					{color}
 					selected={array[rowIndex][colIndex]}
 					selecting={selectionArray[rowIndex][colIndex]}
-					disabled={occupied[rowIndex][colIndex]}
-					cursor={occupied[rowIndex][colIndex] ? 'cursor-not-allowed' : cursor}
-					onmouseenter={() => mouseenter(rowIndex, colIndex, occupied[rowIndex][colIndex])}
-					onmousedown={() => mousedown(rowIndex, colIndex, occupied[rowIndex][colIndex])}
+					{cursor}
+					onmouseenter={() => mouseenter(rowIndex, colIndex)}
+					onmousedown={() => mousedown(rowIndex, colIndex)}
 					>{row}{col}</Well
 				>
 			{/each}
