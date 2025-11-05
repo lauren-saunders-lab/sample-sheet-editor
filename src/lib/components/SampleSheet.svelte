@@ -1,9 +1,9 @@
 <svelte:options runes={true} />
 
 <script lang="ts">
-	import { type Experiment, getOccupiedWells, makeDefaultSample, removePlate, type Sample } from '$lib/util';
+	import { type Experiment, makeDefaultSample, removePlate, type Sample } from '$lib/util';
 	import Plate from '$lib/components/Plate.svelte';
-	import { Accordion, AccordionItem, Button, Checkbox, Input, Label, Helper } from 'flowbite-svelte';
+	import { Accordion, AccordionItem, Button, Checkbox, Input, Label } from 'flowbite-svelte';
 	import { CirclePlusSolid, GridPlusSolid, TrashBinSolid } from 'flowbite-svelte-icons';
 
 	let {
@@ -16,15 +16,9 @@
 		numPlates: number;
 	} = $props();
 
-	let sampleNames = $derived(samples.map(v => v.sample_name));
-
-	let occupiedWells = $derived.by(() => {
-		let occupied = [];
-		for (let plateIndex = 0; plateIndex < numPlates; plateIndex++) {
-			occupied.push(getOccupiedWells(samples, plateIndex));
-		}
-		return occupied;
-	});
+	let platesIndices = $derived(
+		numPlates > 0 ? Array.from({ length: numPlates }, (_, i) => i) : [0]
+	);
 
 	function removeLastPlate() {
 		const plateIndex = numPlates - 1;
@@ -77,25 +71,19 @@
 			>
 		</div>
 		{#if experiment.global_p5_p7}
-			<Plate bind:str={samples[0].p5} type="p5" occupied={occupiedWells[0]} />
-			<Plate bind:str={samples[0].p7} type="p7" occupied={occupiedWells[0]} />
+			<Plate bind:str={samples[0].p5} type="p5" />
+			<Plate bind:str={samples[0].p7} type="p7" />
 		{/if}
 	</div>
 	<Accordion multiple>
 		{#each samples as sample, sampleIndex (sampleIndex)}
-			{@const validName = sampleNames.filter(s => s === sample.sample_name).length === 1}
 			<AccordionItem open>
 				{#snippet header()}{sample.sample_name}{/snippet}
 				<div class="grid grid-cols-1 gap-4 pb-4 lg:grid-cols-2">
 					<div>
 						<Label>
 							Sample name
-							<Input bind:value={sample.sample_name} color={validName ? 'default' : 'red'} />
-							{#if !validName}
-								<Helper class="mt-2" color="red">
-									<span class="font-medium">Sample names must be unique!</span>
-								</Helper>
-							{/if}
+							<Input bind:value={sample.sample_name} />
 						</Label>
 					</div>
 					<div>
@@ -119,11 +107,11 @@
 				</div>
 				<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 					{#if !experiment.global_p5_p7}
-						<Plate bind:str={sample.p5} type="p5" occupied={occupiedWells[0]} />
-						<Plate bind:str={sample.p7} type="p7" occupied={occupiedWells[0]} />
+						<Plate bind:str={sample.p5} type="p5" />
+						<Plate bind:str={sample.p7} type="p7" />
 					{/if}
-					{#each occupiedWells as occupied, plateIndex (plateIndex)}
-						<Plate bind:str={sample.rt} type="rt" {plateIndex} {occupied} />
+					{#each platesIndices as plateIndex (plateIndex)}
+						<Plate bind:str={sample.rt} type="rt" {plateIndex} />
 					{/each}
 					<div class="">
 						<Button
