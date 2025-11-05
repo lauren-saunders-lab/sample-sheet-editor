@@ -184,17 +184,12 @@ function additionalSelectionValid(
 	additionalStr: string,
 	type: SeqType,
 	plateIndex: number = 0,
-	occupied: Array<Array<boolean>>
 ): boolean {
 	const existingWells = parse(str, type, plateIndex);
 	const additionalWells = parse(additionalStr, type, plateIndex);
 	let isNoOp = true;
 	for (let col = 0; col < nCols; col++) {
 		for (let row = 0; row < nRows; row++) {
-			if (additionalWells[row][col] && occupied[row][col]) {
-				// selection is invalid if it includes a well that is already taken by another sample
-				return false;
-			}
 			if (!existingWells[row][col] && additionalWells[row][col]) {
 				// if an additional well differs from the existing well this is not a no-op
 				isNoOp = false;
