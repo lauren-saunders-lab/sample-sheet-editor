@@ -167,18 +167,6 @@ function removePlate(str: string, plateIndex: number): string {
 	return str.replace(regex, '').split(',').filter(Boolean).join(',');
 }
 
-function getOccupiedWells(samples: Array<Sample>, plateIndex: number): Array<Array<boolean>> {
-	let occupied = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false));
-	for (const sample of samples) {
-		occupied = parse(sample.rt, 'rt', plateIndex, occupied);
-		if (plateIndex === 0) {
-			occupied = parse(sample.p5, 'p5', plateIndex, occupied);
-			occupied = parse(sample.p7, 'p7', plateIndex, occupied);
-		}
-	}
-	return occupied;
-}
-
 function additionalSelectionValid(
 	str: string,
 	additionalStr: string,
@@ -306,7 +294,6 @@ export {
 	makeEmptyExperiment,
 	makeEmptySample,
 	additionalSelectionValid,
-	getOccupiedWells,
 	removePlate,
 	importTsv,
 	exportTsv
