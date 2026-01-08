@@ -18,7 +18,6 @@ type Sample = {
 	p7: string;
 	rt: string;
 	hashing?: string;
-	cells_per_well: number;
 };
 
 type TsvRow = Experiment & Sample;
@@ -45,7 +44,6 @@ function makeDefaultSample(): Sample {
 		p7: '',
 		rt: '',
 		hashing: '',
-		cells_per_well: 1000
 	};
 }
 
@@ -58,7 +56,6 @@ function makeEmptySample(): Sample {
 		p7: '',
 		rt: '',
 		hashing: '',
-		cells_per_well: 0
 	};
 }
 
@@ -200,18 +197,6 @@ function countPlates(str: string): number {
 	return count;
 }
 
-function countWells(str: string): number {
-	const type = 'rt';
-	const maxPlateIndex = countPlates(str);
-	let sum = 0;
-	for (let plateIndex = 0; plateIndex < maxPlateIndex; plateIndex++) {
-		sum += parse(str, type, plateIndex)
-			.flat()
-			.filter((e) => e).length;
-	}
-	return sum;
-}
-
 function importTsv(tsv: string) {
 	const experiment = makeEmptyExperiment();
 	const samples: Array<Sample> = [];
@@ -232,10 +217,6 @@ function importTsv(tsv: string) {
 		for (const [key, value] of Object.entries(sample)) {
 			sample[key] = tsvRow?.[key] ?? value;
 		}
-		// calculate number of cells per well for this sample
-		sample.cells_per_well = Math.floor(
-			parseInt(tsvRow.n_expected_cells) / countWells(tsvRow.rt)
-		);
 		// ensure we display enough plates
 		numPlates = Math.max(numPlates, countPlates(tsvRow.rt));
 		samples.push(sample);
@@ -265,10 +246,6 @@ function exportTsv(experiment: Experiment, samples: Array<Sample>): string {
 			tsvRow.p5 = samples[0].p5;
 			tsvRow.p7 = samples[0].p7;
 		}
-		// calculate number of cells
-		tsvRow.n_expected_cells = Math.floor(
-			tsvRow.cells_per_well * countWells(tsvRow.rt)
-		).toString();
 		lines.push(
 			tsvHeaders
 				.map((header) => {
@@ -286,7 +263,6 @@ export {
 	type SeqType,
 	type TsvRow,
 	parse,
-	countWells,
 	countPlates,
 	tsvHeaders,
 	makeDefaultSample,

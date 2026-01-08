@@ -3,7 +3,7 @@
 <script lang="ts">
 	import { type Experiment, makeDefaultSample, removePlate, type Sample } from '$lib/util';
 	import Plate from '$lib/components/Plate.svelte';
-	import { Accordion, AccordionItem, Button, Checkbox, Input, Label } from 'flowbite-svelte';
+	import { Accordion, AccordionItem, Button, Checkbox, Input, Label, Tooltip } from 'flowbite-svelte';
 	import { CirclePlusSolid, GridPlusSolid, TrashBinSolid } from 'flowbite-svelte-icons';
 
 	let {
@@ -94,8 +94,14 @@
 					</div>
 					<div>
 						<Label>
-							Cells per well
-							<Input type="number" bind:value={sample.cells_per_well} />
+							Expected cells
+							<Tooltip>
+								<p>Your best estimate of the number of single cells you expect to be represented in the final sequencing data for this sample.</p>
+								<p>Start with the number of cells loaded at RT, then multiply by your typical recovery rate (often 20–50%).</p>
+								<p>If sequencing depth is limited or samples are diluted, reduce this number accordingly.</p>
+								<p>When in doubt, use values from similar past experiments.</p>
+							</Tooltip>
+							<Input type="number" bind:value={sample.n_expected_cells} />
 						</Label>
 					</div>
 					<div>
