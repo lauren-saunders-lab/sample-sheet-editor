@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
 	parse,
-	countWells,
 	countPlates,
 	removePlate,
 	type SeqType,
@@ -130,41 +129,34 @@ describe('parse', () => {
 	});
 });
 
-describe('count plates and wells', () => {
-	it('empty string: 0 wells, 1 plate', () => {
+describe('count plates', () => {
+	it('empty string: 1 plate', () => {
 		const str = '';
 		expect(countPlates(str)).toBe(1);
-		expect(countWells(str)).toBe(0);
 	});
-	it('one well in plate 1: 1 well, 1 plate', () => {
+	it('one well in plate 1: 1 plate', () => {
 		const str = 'P01-A02';
 		expect(countPlates(str)).toBe(1);
-		expect(countWells(str)).toBe(1);
 	});
-	it('one well in plate 3: 1 well, 3 plates', () => {
+	it('one well in plate 3: 3 plates', () => {
 		const str = 'P03-C09';
 		expect(countPlates(str)).toBe(3);
-		expect(countWells(str)).toBe(1);
 	});
-	it('four wells in plate 1: 4 wells, 1 plate', () => {
+	it('four wells in plate 1: 1 plate', () => {
 		const str = 'P01-A02,P01-C07,P01-H11,P01-F07';
 		expect(countPlates(str)).toBe(1);
-		expect(countWells(str)).toBe(4);
 	});
-	it('two rows in 2 plates: 24 wells, 2 plates', () => {
+	it('two rows in 2 plates: 2 plates', () => {
 		const str = 'P01-A01:P01-A12,P02-H01:P02-H12';
 		expect(countPlates(str)).toBe(2);
-		expect(countWells(str)).toBe(24);
 	});
-	it('two cols in 1 plate: 16 wells, 1 plate', () => {
+	it('two cols in 1 plate: 1 plate', () => {
 		const str = 'P01-A01:P01-H01,P01-A09:P01-H09';
 		expect(countPlates(str)).toBe(1);
-		expect(countWells(str)).toBe(16);
 	});
-	it('all wells in 4 plates: 384 well, 4 plates', () => {
+	it('all wells in 4 plates: 4 plates', () => {
 		const str = 'P01-A01:P01-H12,P02-A01:P02-H12,P03-A01:P03-H12,P04-A01:P04-H12';
 		expect(countPlates(str)).toBe(4);
-		expect(countWells(str)).toBe(384);
 	});
 });
 
@@ -203,8 +195,6 @@ describe('tsv import / export', () => {
 		expect(samples[0].p5).toBe('A01');
 		expect(samples[0].p7).toBe('B03,C04');
 		expect(samples[0].rt).toBe('P01-A02,P01-B05:P01-C05');
-		// this is calculated by dividing n_expected_cells (99) by the number of selected rt wells (3):
-		expect(samples[0].cells_per_well).toBe(33);
 		// this is set to true if p5 and p7 are the same for all samples:
 		expect(experiment.global_p5_p7).toBe(true);
 
@@ -235,8 +225,6 @@ describe('tsv import / export', () => {
 		expect(samples[0].p5).toBe('A01');
 		expect(samples[0].p7).toBe('B03,C04');
 		expect(samples[0].rt).toBe('P01-A02,P01-B05:P01-C05');
-		// this is calculated by dividing n_expected_cells (27) by the number of selected rt wells (3):
-		expect(samples[0].cells_per_well).toBe(9);
 		// this is set to true if p5 and p7 are the same for all samples:
 		expect(experiment.global_p5_p7).toBe(false);
 		// sample 2
@@ -247,8 +235,6 @@ describe('tsv import / export', () => {
 		expect(samples[1].p5).toBe('A09');
 		expect(samples[1].p7).toBe('B01');
 		expect(samples[1].rt).toBe('P02-H02:P02-H11');
-		// this is calculated by dividing n_expected_cells (100) by the number of selected rt wells (10):
-		expect(samples[1].cells_per_well).toBe(10);
 		// this is set to true if p5 and p7 are the same for all samples:
 		expect(experiment.global_p5_p7).toBe(false);
 
