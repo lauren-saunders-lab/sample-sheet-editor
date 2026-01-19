@@ -1,11 +1,8 @@
 <svelte:options runes={true} />
 
 <script lang="ts">
-	import { Banner} from 'flowbite-svelte';
-	import {
-		makeDefaultExperiment,
-		makeDefaultSample,
-	} from '$lib/util';
+	import { Banner } from 'flowbite-svelte';
+	import { makeDefaultExperiment, makeDefaultSample } from '$lib/util';
 	import favicon from '$lib/assets/favicon.jpeg';
 	import BottomNavBar from '$lib/components/BottomNavBar.svelte';
 	import SampleSheet from '$lib/components/SampleSheet.svelte';
