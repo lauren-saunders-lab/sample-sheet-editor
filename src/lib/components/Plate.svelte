@@ -118,8 +118,7 @@
 					selecting={selectionArray[rowIndex][colIndex]}
 					{cursor}
 					onmouseenter={() => mouseenter(rowIndex, colIndex)}
-					onmousedown={() => mousedown(rowIndex, colIndex)}
-					>{row}{col}</Well
+					onmousedown={() => mousedown(rowIndex, colIndex)}>{row}{col}</Well
 				>
 			{/each}
 		{/each}

@@ -5,8 +5,7 @@ type SeqType = 'p5' | 'p7' | 'rt';
 
 type Experiment = {
 	experiment_name: string;
-	path_fastq: string;
-	path_bcl: string;
+	path_reads: string;
 	global_p5_p7: boolean;
 };
 
@@ -23,8 +22,7 @@ type Sample = {
 type TsvRow = Experiment & Sample;
 
 const tsvHeaders: Array<keyof TsvRow> = [
-	'path_fastq',
-	'path_bcl',
+	'path_reads',
 	'experiment_name',
 	'sample_name',
 	'species',
@@ -43,7 +41,7 @@ function makeDefaultSample(): Sample {
 		p5: '',
 		p7: '',
 		rt: '',
-		hashing: '',
+		hashing: ''
 	};
 }
 
@@ -55,21 +53,20 @@ function makeEmptySample(): Sample {
 		p5: '',
 		p7: '',
 		rt: '',
-		hashing: '',
+		hashing: ''
 	};
 }
 
 function makeDefaultExperiment(): Experiment {
 	return {
-		path_fastq: '/data',
-		path_bcl: '/data',
+		path_reads: '/data',
 		experiment_name: 'experiment',
 		global_p5_p7: false
 	};
 }
 
 function makeEmptyExperiment(): Experiment {
-	return { path_fastq: '', path_bcl: '', experiment_name: '', global_p5_p7: false };
+	return { path_reads: '', experiment_name: '', global_p5_p7: false };
 }
 
 function getPlateIndex(str: string, type: SeqType): number {
@@ -168,7 +165,7 @@ function additionalSelectionValid(
 	str: string,
 	additionalStr: string,
 	type: SeqType,
-	plateIndex: number = 0,
+	plateIndex: number = 0
 ): boolean {
 	const existingWells = parse(str, type, plateIndex);
 	const additionalWells = parse(additionalStr, type, plateIndex);
@@ -195,6 +192,17 @@ function countPlates(str: string): number {
 		count = Math.max(count, parseInt(match[1]));
 	}
 	return count;
+}
+
+function getPathReads(tsvRow: Record<string, string>): string {
+	// Returns path_reads
+	for (const key of ['path_reads', 'path_fastq', 'path_bcl']) {
+		const value = tsvRow?.[key]?.trim();
+		if (value) {
+			return value;
+		}
+	}
+	return '';
 }
 
 function importTsv(tsv: string) {
@@ -224,6 +232,7 @@ function importTsv(tsv: string) {
 		for (const [key, value] of Object.entries(experiment)) {
 			experiment[key] = tsvRow?.[key] ?? value;
 		}
+		experiment.path_reads = getPathReads(tsvRow);
 	}
 	// if all samples have the same p5/p7 assume they are defined for the whole experiment
 	if (

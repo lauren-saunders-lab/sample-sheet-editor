@@ -30,10 +30,19 @@
 	}
 </script>
 
-<BottomNavItem btnName="New" onclick={() => {areYouSureModalOpen=true}}>
+<BottomNavItem
+	btnName="New"
+	onclick={() => {
+		areYouSureModalOpen = true;
+	}}
+>
 	<FileCirclePlusSolid
 		class="mb-1 h-6 w-6 text-gray-500 group-hover:text-primary-600 dark:text-gray-400 dark:group-hover:text-primary-500"
 	/>
 </BottomNavItem>
 
-<AreYouSureModal bind:open={areYouSureModalOpen} onConfirm={createNewExperiment} message="Creating a new sample sheet will replace the current one - do you want to continue?" />
+<AreYouSureModal
+	bind:open={areYouSureModalOpen}
+	onConfirm={createNewExperiment}
+	message="Creating a new sample sheet will replace the current one - do you want to continue?"
+/>

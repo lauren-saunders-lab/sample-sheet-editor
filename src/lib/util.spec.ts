@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	parse,
-	countPlates,
-	removePlate,
-	type SeqType,
-	importTsv,
-	exportTsv
-} from '$lib/util';
+import { parse, countPlates, removePlate, type SeqType, importTsv, exportTsv } from '$lib/util';
 
 function countTrue(array: Array<Array<boolean>>): number {
 	return array.flat().filter((e) => e).length;
@@ -177,15 +170,15 @@ describe('remove a plate', () => {
 });
 
 describe('tsv import / export', () => {
-	it('single sample', () => {
+	it('single sample, contains both path_bcl and path_fastq', () => {
 		const str =
 			'p5\tp7\texperiment_name\tpath_fastq\tpath_bcl\tsample_name\tspecies\trt\thashing\tn_expected_cells\n' +
 			'A01\tB03,C04\texperiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tP01-A02,P01-B05:P01-C05\t\t99';
 		const { samples, experiment, numPlates } = importTsv(str);
 		expect(numPlates).toBe(1);
 		expect(experiment.experiment_name).toBe('experiment');
-		expect(experiment.path_bcl).toBe('/data_bcl');
-		expect(experiment.path_fastq).toBe('/data_fastq');
+		// path_fastq takes precedence over path_bcl if both are provided, and converted to path_reads
+		expect(experiment.path_reads).toBe('/data_fastq');
 		expect(samples.length).toBe(1);
 		// sample 1
 		expect(samples[0].sample_name).toBe('sample1');
@@ -208,14 +201,13 @@ describe('tsv import / export', () => {
 
 	it('two samples with different p5/p7, different column order', () => {
 		const str =
-			'experiment_name\tpath_fastq\tpath_bcl\tsample_name\tspecies\tp5\tp7\trt\thashing\tn_expected_cells\n' +
-			'experiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tA01\tB03,C04\tP01-A02,P01-B05:P01-C05\t\t27\n' +
-			'experiment\t/data_fastq\t/data_bcl\tsample1\tmouse\tA09\tB01\tP02-H02:P02-H11\t\t100';
+			'experiment_name\tpath_bcl\tsample_name\tspecies\tp5\tp7\trt\thashing\tn_expected_cells\n' +
+			'experiment\t/data\tsample1\tmouse\tA01\tB03,C04\tP01-A02,P01-B05:P01-C05\t\t27\n' +
+			'experiment\t/data\tsample1\tmouse\tA09\tB01\tP02-H02:P02-H11\t\t100';
 		const { samples, experiment, numPlates } = importTsv(str);
 		expect(numPlates).toBe(2);
 		expect(experiment.experiment_name).toBe('experiment');
-		expect(experiment.path_bcl).toBe('/data_bcl');
-		expect(experiment.path_fastq).toBe('/data_fastq');
+		expect(experiment.path_reads).toBe('/data');
 		expect(samples.length).toBe(2);
 		// sample 1
 		expect(samples[0].sample_name).toBe('sample1');
