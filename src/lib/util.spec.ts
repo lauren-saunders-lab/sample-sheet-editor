@@ -1,8 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import { parse, countPlates, removePlate, type SeqType, importTsv, exportTsv } from '$lib/util';
+import {
+	parse,
+	countPlates,
+	removePlate,
+	type SeqType,
+	type Sample,
+	importTsv,
+	exportTsv,
+	additionalSelectionValid,
+	makeDefaultSample,
+	makeDefaultExperiment,
+	makeEmptySample,
+	makeEmptyExperiment,
+	removeLastPlate,
+	updateGlobalPCRIndices
+} from '$lib/util';
 
 function countTrue(array: Array<Array<boolean>>): number {
 	return array.flat().filter((e) => e).length;
+}
+
+function makeSample(overrides: Partial<Sample> = {}): Sample {
+	return {
+		...makeEmptySample(),
+		...overrides
+	};
 }
 
 describe('parse', () => {
@@ -120,6 +142,14 @@ describe('parse', () => {
 		expect(countTrue(parse(str, 'rt', 2))).toBe(96);
 		expect(countTrue(parse(str, 'rt', 3))).toBe(0);
 	});
+	it('invalid ranges or wells produce no selection', () => {
+		expect(countTrue(parse('A00', 'p5'))).toBe(0);
+		expect(countTrue(parse('I01', 'p5'))).toBe(0);
+		expect(countTrue(parse('A13', 'p5'))).toBe(0);
+		expect(countTrue(parse('B02:A02', 'p5'))).toBe(0);
+		expect(countTrue(parse('A05:A02', 'p7'))).toBe(0);
+		expect(countTrue(parse('P01-A01:P01-A00', 'rt', 0))).toBe(0);
+	});
 });
 
 describe('count plates', () => {
@@ -166,6 +196,104 @@ describe('remove a plate', () => {
 		expect(removePlate('P01-A02,P02-B05:P02-C05,P02-A02,P01-B05:P01-C05', 0)).toBe(
 			'P02-B05:P02-C05,P02-A02'
 		);
+	});
+	it('removes trailing commas', () => {
+		expect(removePlate('P03-A01,P03-A02', 0)).toBe('P03-A01,P03-A02');
+	});
+	it('no-op when plate not present', () => {
+		expect(removePlate('P03-A01,P03-A02', 0)).toBe('P03-A01,P03-A02');
+	});
+});
+
+describe('remove last plate from samples', () => {
+	it('no-op when only one plate', () => {
+		const samples = [makeSample({ rt: 'P01-A01' }), makeSample()];
+		expect(removeLastPlate(samples, 1)).toBe(1);
+		expect(samples[0].rt).toBe('P01-A01');
+		expect(samples[1].rt).toBe('');
+	});
+
+	it('removes the highest plate index and decrements count', () => {
+		const samples = [
+			makeSample({ rt: 'P01-A01,P03-B02,P02-C03' }),
+			makeSample({ rt: 'P03-A01:P03-A02,P01-H12' })
+		];
+		expect(removeLastPlate(samples, 3)).toBe(2);
+		expect(samples[0].rt).toBe('P01-A01,P02-C03');
+		expect(samples[1].rt).toBe('P01-H12');
+	});
+});
+
+describe('update global PCR indices', () => {
+	it('copies p5/p7 to all samples when enabled', () => {
+		const samples = [
+			makeSample({ p5: 'A01', p7: 'B01' }),
+			makeSample({ p5: 'A02', p7: 'B02' }),
+			makeSample({ p5: 'A03', p7: 'B03' })
+		];
+		updateGlobalPCRIndices(samples, true);
+		expect(samples[1].p5).toBe('A01');
+		expect(samples[1].p7).toBe('B01');
+		expect(samples[2].p5).toBe('A01');
+		expect(samples[2].p7).toBe('B01');
+	});
+
+	it('no-op when disabled', () => {
+		const samples = [makeSample({ p5: 'A01', p7: 'B01' }), makeSample({ p5: 'A02', p7: 'B02' })];
+		updateGlobalPCRIndices(samples, false);
+		expect(samples[1].p5).toBe('A02');
+		expect(samples[1].p7).toBe('B02');
+	});
+});
+
+describe('additional selection validity', () => {
+	it('rejects no-op selections', () => {
+		expect(additionalSelectionValid('A01', 'A01', 'p5')).toBe(false);
+		expect(additionalSelectionValid('A01:B01', 'A01', 'p5')).toBe(false);
+	});
+	it('accepts selections that add new wells', () => {
+		expect(additionalSelectionValid('A01', 'B01', 'p5')).toBe(true);
+		expect(additionalSelectionValid('A01', 'A02', 'p7')).toBe(true);
+	});
+	it('respects plate index for rt', () => {
+		const existing = 'P01-A01,P02-B01';
+		expect(additionalSelectionValid(existing, 'P02-C01', 'rt', 0)).toBe(false);
+		expect(additionalSelectionValid(existing, 'P02-C01', 'rt', 1)).toBe(true);
+	});
+});
+
+describe('default/empty builders', () => {
+	it('default sample and experiment values are stable', () => {
+		expect(makeDefaultSample()).toEqual({
+			sample_name: 'sample1',
+			species: 'mouse',
+			n_expected_cells: '100',
+			p5: '',
+			p7: '',
+			rt: '',
+			hashing: ''
+		});
+		expect(makeDefaultExperiment()).toEqual({
+			path_reads: '/data',
+			experiment_name: 'experiment',
+			global_p5_p7: false
+		});
+	});
+	it('empty sample and experiment values are blank', () => {
+		expect(makeEmptySample()).toEqual({
+			sample_name: '',
+			species: '',
+			n_expected_cells: '',
+			p5: '',
+			p7: '',
+			rt: '',
+			hashing: ''
+		});
+		expect(makeEmptyExperiment()).toEqual({
+			path_reads: '',
+			experiment_name: '',
+			global_p5_p7: false
+		});
 	});
 });
 
