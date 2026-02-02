@@ -110,11 +110,14 @@ function parse(
 	plateIndex: number = 0,
 	array = Array.from({ length: nRows }, () => Array.from({ length: nCols }, () => false))
 ): Array<Array<boolean>> {
-	for (const region of str.split(',')) {
+	for (const rawRegion of str.split(',')) {
+		const region = rawRegion.trim();
 		if (region === '') {
-			return array;
+			continue;
 		}
-		const [start, end] = region.split(':');
+		const [rawStart, rawEnd] = region.split(':');
+		const start = rawStart?.trim() ?? '';
+		const end = rawEnd?.trim() ?? '';
 		if (!start) {
 			// invalid
 			return array;
@@ -155,10 +158,12 @@ function parse(
 
 function removePlate(str: string, plateIndex: number): string {
 	// remove all assignments to the given plate from the string, where plateIndex is 0-based
-	const plate = `P${String(plateIndex + 1).padStart(2, '0')}`;
-	const regex = new RegExp(`${plate}-.{3}(?:,|:|$)`, 'g');
-	// remove any trailing commas
-	return str.replace(regex, '').split(',').filter(Boolean).join(',');
+	const plate = `P${String(plateIndex + 1).padStart(2, '0')}-`;
+	return str
+		.split(',')
+		.map((part) => part.trim())
+		.filter((part) => part.length > 0 && !part.startsWith(plate))
+		.join(',');
 }
 
 function removeLastPlate(samples: Array<Sample>, numPlates: number): number {
@@ -229,11 +234,11 @@ function getPathReads(tsvRow: Record<string, string>): string {
 
 function mergeRtSelections(existingRt: string, nextRt: string): string {
 	const parts = [existingRt, nextRt]
-		.join(';')
-		.split(';')
+		.join(',')
+		.split(',')
 		.map((part) => part.trim())
 		.filter((part) => part.length > 0);
-	return parts.join(';');
+	return parts.join(',');
 }
 
 function importTsv(tsv: string) {
@@ -285,12 +290,14 @@ function importTsv(tsv: string) {
 		experiment.path_reads = pathReads;
 	}
 	// if all samples have the same p5/p7 assume they are defined for the whole experiment
-	if (
-		samples.filter((e) => {
-			return e.p5 !== samples[0].p5 || e.p7 !== samples[0].p7;
-		}).length === 0
-	) {
-		experiment.global_p5_p7 = true;
+	if (samples.length > 0) {
+		if (
+			samples.filter((e) => {
+				return e.p5 !== samples[0].p5 || e.p7 !== samples[0].p7;
+			}).length === 0
+		) {
+			experiment.global_p5_p7 = true;
+		}
 	}
 	return { experiment: experiment, samples: samples, numPlates: numPlates };
 }

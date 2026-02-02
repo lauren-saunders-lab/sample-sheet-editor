@@ -30,7 +30,7 @@
 		} else if (type === 'rt') {
 			return 'bg-yellow-400';
 		} else {
-			return 'gb-gray-400';
+			return 'bg-gray-400';
 		}
 	});
 
@@ -81,6 +81,8 @@
 		}
 	}
 </script>
+
+<svelte:window on:mouseup={onmouseup} />
 
 <div class="flex flex-col rounded border-1 border-gray-400 p-2 shadow-lg">
 	<div class="mb-2 flex flex-row items-stretch">

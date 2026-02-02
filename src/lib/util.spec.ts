@@ -78,6 +78,19 @@ describe('parse', () => {
 		expect(a[6][8]).toBe(true);
 		expect(a[6][9]).toBe(true);
 	});
+	it('tolerates spaces and duplicate commas', () => {
+		const a = parse(' A02 , , H03  ', 'p5');
+		expect(countTrue(a)).toBe(2);
+		expect(a[0][1]).toBe(true);
+		expect(a[7][2]).toBe(true);
+	});
+	it('tolerates spaces and duplicate commas for rt', () => {
+		const a = parse(' P01-A01:P01-A02 , , P01-B02  ', 'rt', 0);
+		expect(countTrue(a)).toBe(3);
+		expect(a[0][0]).toBe(true);
+		expect(a[0][1]).toBe(true);
+		expect(a[1][1]).toBe(true);
+	});
 	it('valid rt columns over two plates', () => {
 		const str = 'P01-A02:P01-C02,P01-B10:P01-G10,P02-C06:P02-E06';
 		// 1st plate (index 0):
@@ -198,6 +211,9 @@ describe('remove a plate', () => {
 			'P02-B05:P02-C05,P02-A02'
 		);
 	});
+	it('removes entire ranges for a plate', () => {
+		expect(removePlate('P01-A01:P01-B02,P02-C01', 0)).toBe('P02-C01');
+	});
 	it('removes trailing commas', () => {
 		expect(removePlate('P03-A01,P03-A02', 0)).toBe('P03-A01,P03-A02');
 	});
@@ -268,11 +284,9 @@ describe('merge rt selections', () => {
 		expect(mergeRtSelections('', '')).toBe('');
 		expect(mergeRtSelections('P01-A01', '')).toBe('P01-A01');
 		expect(mergeRtSelections('', 'P01-A01')).toBe('P01-A01');
-		expect(mergeRtSelections('P01-A01;', 'P01-B01')).toBe('P01-A01;P01-B01');
-		expect(mergeRtSelections('P01-A01;;', ';P01-B01;')).toBe('P01-A01;P01-B01');
-		expect(mergeRtSelections(' P01-A01 ; P01-B01 ', ' P01-C01 ')).toBe(
-			'P01-A01;P01-B01;P01-C01'
-		);
+		expect(mergeRtSelections('P01-A01,', 'P01-B01')).toBe('P01-A01,P01-B01');
+		expect(mergeRtSelections('P01-A01,,', ',P01-B01,')).toBe('P01-A01,P01-B01');
+		expect(mergeRtSelections(' P01-A01 , P01-B01 ', ' P01-C01 ')).toBe('P01-A01,P01-B01,P01-C01');
 	});
 });
 
@@ -386,7 +400,7 @@ describe('tsv import / export', () => {
 			'sample1\tmouse\tA01\tB01\tP01-A01\t\t100\texperiment\t/data\n' +
 			'sample1\tmouse\tA01\tB01\tP01-B01\t\t100\texperiment\t/data\n' +
 			'sample1\tmouse\tA01\tB01\tP01-C01:P01-E01\t\t100\texperiment\t/data\n' +
-			'sample1\tmouse\tA01\tB01\tP01-F01;P01-G01\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP01-F01,P01-G01\t\t100\texperiment\t/data\n' +
 			'sample1\tmouse\tA01\tB01\tP02-A02:P02-A05\t\t100\texperiment\t/data\n' +
 			'sample1\tmouse\tA01\tB01\tP01-H12\t\t100\texperiment2\t/data\n' +
 			'sample2\tmouse\tA01\tB01\tP01-A02\t\t100\texperiment\t/data';
@@ -402,7 +416,7 @@ describe('tsv import / export', () => {
 			n_expected_cells: '100',
 			p5: 'A01',
 			p7: 'B01',
-			rt: 'P01-A01;P01-B01;P01-C01:P01-E01;P01-F01;P01-G01;P02-A02:P02-A05',
+			rt: 'P01-A01,P01-B01,P01-C01:P01-E01,P01-F01,P01-G01,P02-A02:P02-A05',
 			hashing: ''
 		});
 		// different experiment name should not merge
