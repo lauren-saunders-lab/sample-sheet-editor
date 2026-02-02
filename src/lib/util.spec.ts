@@ -13,7 +13,8 @@ import {
 	makeEmptySample,
 	makeEmptyExperiment,
 	removeLastPlate,
-	updateGlobalPCRIndices
+	updateGlobalPCRIndices,
+	mergeRtSelections
 } from '$lib/util';
 
 function countTrue(array: Array<Array<boolean>>): number {
@@ -262,6 +263,19 @@ describe('additional selection validity', () => {
 	});
 });
 
+describe('merge rt selections', () => {
+	it('normalizes separators and whitespace', () => {
+		expect(mergeRtSelections('', '')).toBe('');
+		expect(mergeRtSelections('P01-A01', '')).toBe('P01-A01');
+		expect(mergeRtSelections('', 'P01-A01')).toBe('P01-A01');
+		expect(mergeRtSelections('P01-A01;', 'P01-B01')).toBe('P01-A01;P01-B01');
+		expect(mergeRtSelections('P01-A01;;', ';P01-B01;')).toBe('P01-A01;P01-B01');
+		expect(mergeRtSelections(' P01-A01 ; P01-B01 ', ' P01-C01 ')).toBe(
+			'P01-A01;P01-B01;P01-C01'
+		);
+	});
+});
+
 describe('default/empty builders', () => {
 	it('default sample and experiment values are stable', () => {
 		expect(makeDefaultSample()).toEqual({
@@ -364,5 +378,58 @@ describe('tsv import / export', () => {
 		expect(roundTrip.samples).toEqual(samples);
 		expect(roundTrip.experiment).toEqual(experiment);
 		expect(roundTrip.numPlates).toEqual(numPlates);
+	});
+
+	it('merges duplicate rows that only differ by rt selections', () => {
+		const str =
+			'sample_name\tspecies\tp5\tp7\trt\thashing\tn_expected_cells\texperiment_name\tpath_bcl\n' +
+			'sample1\tmouse\tA01\tB01\tP01-A01\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP01-B01\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP01-C01:P01-E01\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP01-F01;P01-G01\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP02-A02:P02-A05\t\t100\texperiment\t/data\n' +
+			'sample1\tmouse\tA01\tB01\tP01-H12\t\t100\texperiment2\t/data\n' +
+			'sample2\tmouse\tA01\tB01\tP01-A02\t\t100\texperiment\t/data';
+		const { samples, experiment, numPlates } = importTsv(str);
+		// includes P02 selections so we need two plates
+		expect(numPlates).toBe(2);
+		// sample1/experiment merged, plus one row for experiment2 and one for sample2
+		expect(samples.length).toBe(3);
+		// merged row: same sample/experiment/p5/p7/etc; rt concatenated in input order
+		expect(samples[0]).toEqual({
+			sample_name: 'sample1',
+			species: 'mouse',
+			n_expected_cells: '100',
+			p5: 'A01',
+			p7: 'B01',
+			rt: 'P01-A01;P01-B01;P01-C01:P01-E01;P01-F01;P01-G01;P02-A02:P02-A05',
+			hashing: ''
+		});
+		// different experiment name should not merge
+		expect(samples[1]).toEqual({
+			sample_name: 'sample1',
+			species: 'mouse',
+			n_expected_cells: '100',
+			p5: 'A01',
+			p7: 'B01',
+			rt: 'P01-H12',
+			hashing: ''
+		});
+		// different sample name should not merge
+		expect(samples[2]).toEqual({
+			sample_name: 'sample2',
+			species: 'mouse',
+			n_expected_cells: '100',
+			p5: 'A01',
+			p7: 'B01',
+			rt: 'P01-A02',
+			hashing: ''
+		});
+		// experiment fields should still reflect the last seen experiment values
+		expect(experiment.experiment_name).toBe('experiment');
+		// path_reads should be taken from path_bcl
+		expect(experiment.path_reads).toBe('/data');
+		// all samples still share p5/p7 values
+		expect(experiment.global_p5_p7).toBe(true);
 	});
 });
