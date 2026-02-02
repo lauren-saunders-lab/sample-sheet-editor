@@ -227,9 +227,19 @@ function getPathReads(tsvRow: Record<string, string>): string {
 	return '';
 }
 
+function mergeRtSelections(existingRt: string, nextRt: string): string {
+	const parts = [existingRt, nextRt]
+		.join(';')
+		.split(';')
+		.map((part) => part.trim())
+		.filter((part) => part.length > 0);
+	return parts.join(';');
+}
+
 function importTsv(tsv: string) {
 	const experiment = makeEmptyExperiment();
 	const samples: Array<Sample> = [];
+	const sampleIndexByKey = new Map<string, number>();
 	let numPlates = 1;
 	const lines = [];
 	for (const line of tsv.trim().split('\n')) {
@@ -247,14 +257,32 @@ function importTsv(tsv: string) {
 		for (const [key, value] of Object.entries(sample)) {
 			sample[key] = tsvRow?.[key] ?? value;
 		}
+		const pathReads = getPathReads(tsvRow);
+		const sampleKey = JSON.stringify({
+			sample_name: sample.sample_name,
+			species: sample.species,
+			n_expected_cells: sample.n_expected_cells,
+			p5: sample.p5,
+			p7: sample.p7,
+			hashing: sample.hashing ?? '',
+			experiment_name: tsvRow?.experiment_name ?? '',
+			path_reads: pathReads
+		});
 		// ensure we display enough plates
 		numPlates = Math.max(numPlates, countPlates(tsvRow.rt));
-		samples.push(sample);
+		const existingIndex = sampleIndexByKey.get(sampleKey);
+		if (existingIndex !== undefined) {
+			const existing = samples[existingIndex];
+			existing.rt = mergeRtSelections(existing.rt, sample.rt);
+		} else {
+			samples.push(sample);
+			sampleIndexByKey.set(sampleKey, samples.length - 1);
+		}
 		// update experiment
 		for (const [key, value] of Object.entries(experiment)) {
 			experiment[key] = tsvRow?.[key] ?? value;
 		}
-		experiment.path_reads = getPathReads(tsvRow);
+		experiment.path_reads = pathReads;
 	}
 	// if all samples have the same p5/p7 assume they are defined for the whole experiment
 	if (
@@ -305,5 +333,6 @@ export {
 	removeLastPlate,
 	updateGlobalPCRIndices,
 	importTsv,
-	exportTsv
+	exportTsv,
+	mergeRtSelections
 };
