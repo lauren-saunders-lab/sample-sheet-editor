@@ -161,6 +161,28 @@ function removePlate(str: string, plateIndex: number): string {
 	return str.replace(regex, '').split(',').filter(Boolean).join(',');
 }
 
+function removeLastPlate(samples: Array<Sample>, numPlates: number): number {
+	const plateIndex = numPlates - 1;
+	if (plateIndex < 1) {
+		return numPlates;
+	}
+	for (const sample of samples) {
+		sample.rt = removePlate(sample.rt, plateIndex);
+	}
+	return numPlates - 1;
+}
+
+function updateGlobalPCRIndices(samples: Array<Sample>, enabled: boolean): void {
+	// ensure all samples have the same p5 & p7 if global_p5_p7 is enabled
+	if (!enabled) {
+		return;
+	}
+	for (const sample of samples.slice(1)) {
+		sample.p5 = samples[0].p5;
+		sample.p7 = samples[0].p7;
+	}
+}
+
 function additionalSelectionValid(
 	str: string,
 	additionalStr: string,
@@ -280,6 +302,8 @@ export {
 	makeEmptySample,
 	additionalSelectionValid,
 	removePlate,
+	removeLastPlate,
+	updateGlobalPCRIndices,
 	importTsv,
 	exportTsv
 };

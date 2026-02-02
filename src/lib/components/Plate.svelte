@@ -2,7 +2,14 @@
 
 <script lang="ts">
 	import Well from '$lib/components/Well.svelte';
-	import { additionalSelectionValid, parse, type SeqType, removePlate } from '$lib/util';
+	import { parse, type SeqType, removePlate } from '$lib/util';
+	import {
+		applySelection,
+		buildSelection,
+		getCursorForType,
+		getPlatePrefix,
+		getSelectionEnd
+	} from '$lib/plateSelection';
 	import { Button } from 'flowbite-svelte';
 
 	interface Props {
@@ -31,12 +38,8 @@
 	let selectionStartRow = $state('');
 	let selectionStartCol = $state('');
 	let selectionEnd = $state('');
-	let platePrefix = $derived(type === 'rt' ? `P${String(plateIndex + 1).padStart(2, '0')}-` : '');
-	let selection = $derived.by(() => {
-		const start = `${selectionStart ? platePrefix : ''}${selectionStart}`;
-		const end = `${selectionEnd ? platePrefix : ''}${selectionEnd}`;
-		return [start, end].filter(Boolean).join(':');
-	});
+	let platePrefix = $derived(getPlatePrefix(type, plateIndex));
+	let selection = $derived(buildSelection(selectionStart, selectionEnd, type, plateIndex));
 	let selectionArray = $derived(parse(selection, type, plateIndex));
 	let array = $derived(parse(str, type, plateIndex));
 	let selecting = $state(false);
@@ -45,15 +48,7 @@
 	function mousedown(rowIndex: number, colIndex: number) {
 		if (!selecting) {
 			selecting = true;
-			if (type === 'p5') {
-				// column only
-				cursor = 'cursor-s-resize';
-			} else if (type === 'p7') {
-				// row only
-				cursor = 'cursor-e-resize';
-			} else if (type === 'rt') {
-				cursor = 'cursor-se-resize';
-			}
+			cursor = getCursorForType(type);
 			selectionStartRow = rows[rowIndex];
 			selectionStartCol = cols[colIndex];
 			selectionStart = `${selectionStartRow}${selectionStartCol}`;
@@ -63,16 +58,13 @@
 
 	function mouseenter(rowIndex: number, colIndex: number) {
 		if (selecting) {
-			let newSelectionEnd = '';
-			if (type === 'p5') {
-				// column only
-				newSelectionEnd = `${rows[rowIndex]}${selectionStartCol}`;
-			} else if (type === 'p7') {
-				// row only
-				newSelectionEnd = `${selectionStartRow}${cols[colIndex]}`;
-			} else if (type === 'rt') {
-				newSelectionEnd = `${rows[rowIndex]}${cols[colIndex]}`;
-			}
+			const newSelectionEnd = getSelectionEnd(
+				type,
+				selectionStartRow,
+				selectionStartCol,
+				rows[rowIndex],
+				cols[colIndex]
+			);
 			if (newSelectionEnd !== selectionStart) {
 				selectionEnd = newSelectionEnd;
 			}
@@ -81,9 +73,7 @@
 
 	function onmouseup() {
 		if (selecting) {
-			if (additionalSelectionValid(str, selection, type, plateIndex)) {
-				str = [str, selection].filter(Boolean).join(',');
-			}
+			str = applySelection(str, selection, type, plateIndex);
 			selecting = false;
 			cursor = 'cursor-pointer';
 			selectionStart = '';

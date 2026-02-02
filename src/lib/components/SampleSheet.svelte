@@ -1,7 +1,13 @@
 <svelte:options runes={true} />
 
 <script lang="ts">
-	import { type Experiment, makeDefaultSample, removePlate, type Sample } from '$lib/util';
+	import {
+		type Experiment,
+		makeDefaultSample,
+		removeLastPlate,
+		updateGlobalPCRIndices,
+		type Sample
+	} from '$lib/util';
 	import Plate from '$lib/components/Plate.svelte';
 	import {
 		Accordion,
@@ -28,26 +34,13 @@
 		numPlates > 0 ? Array.from({ length: numPlates }, (_, i) => i) : [0]
 	);
 
-	function removeLastPlate() {
-		const plateIndex = numPlates - 1;
-		if (plateIndex < 1) {
-			return;
-		}
-		for (const sample of samples) {
-			sample.rt = removePlate(sample.rt, plateIndex);
-		}
-		--numPlates;
+	function handleRemoveLastPlate() {
+		numPlates = removeLastPlate(samples, numPlates);
 	}
 
-	function updateGlobalPCRIndices(event: Event) {
-		// ensure all samples have the same p5 & p7 if global_p5_p7 is enabled
+	function handleUpdateGlobalPCRIndices(event: Event) {
 		const currentTarget = event.currentTarget as HTMLInputElement;
-		if (currentTarget.checked) {
-			for (const sample of samples.slice(1)) {
-				sample.p5 = samples[0].p5;
-				sample.p7 = samples[0].p7;
-			}
-		}
+		updateGlobalPCRIndices(samples, currentTarget.checked);
 	}
 </script>
 
@@ -87,7 +80,7 @@
 		</Label>
 	</div>
 	<div class="col-span-2">
-		<Checkbox bind:checked={experiment.global_p5_p7} onchange={updateGlobalPCRIndices}
+		<Checkbox bind:checked={experiment.global_p5_p7} onchange={handleUpdateGlobalPCRIndices}
 			>Use the same PCR indices for all samples</Checkbox
 		>
 	</div>
@@ -154,7 +147,7 @@
 						color="light"
 						class="m-2 w-full p-2"
 						disabled={numPlates === 1}
-						onclick={removeLastPlate}
+						onclick={handleRemoveLastPlate}
 					>
 						<TrashBinSolid
 							class="mr-1 mb-1 h-6 w-6 text-gray-500 group-hover:text-primary-600 dark:text-gray-400 dark:group-hover:text-primary-500"
