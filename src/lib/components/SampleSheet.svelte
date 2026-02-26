@@ -115,12 +115,8 @@
 								final sequencing data for this sample.
 							</p>
 							<p>
-								Start with the number of cells loaded at RT, then multiply by your typical recovery
-								rate (often 20–50%).
-							</p>
-							<p>
-								If sequencing depth is limited or samples are diluted, reduce this number
-								accordingly.
+								Start with the number of cells loaded in the final distribution plate, then multiply by your typical recovery
+								rate (often 40–70%).
 							</p>
 							<p>When in doubt, use values from similar past experiments.</p>
 						</Tooltip>
