@@ -248,6 +248,9 @@ function importTsv(tsv: string) {
 	let numPlates = 1;
 	const lines = [];
 	for (const line of tsv.trim().split('\n')) {
+		if (line.trimStart().startsWith('#')) {
+			continue;
+		}
 		lines.push(line.split('\t').map((l) => l.trim()));
 	}
 	const headers = lines[0];
