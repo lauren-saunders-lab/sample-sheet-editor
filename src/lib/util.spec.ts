@@ -465,4 +465,22 @@ describe('tsv import / export', () => {
 		expect(experiment.path_reads).toBe('/data');
 		expect(experiment.global_p5_p7).toBe(false);
 	});
+
+	it('ignores blank lines during import', () => {
+		const str =
+			'sample_name\tspecies\tp5\tp7\trt\thashing\tn_expected_cells\texperiment_name\tpath_bcl\n' +
+			'\n' +
+			'sample1\tmouse\tA01\tB01\tP01-A01\t\t100\texperiment\t/data\n' +
+			'   \n' +
+			'sample2\thuman\tA02\tB02\tP02-A01\t\t200\texperiment\t/data';
+		const { samples, experiment, numPlates } = importTsv(str);
+
+		expect(numPlates).toBe(2);
+		expect(samples).toHaveLength(2);
+		expect(samples[0].sample_name).toBe('sample1');
+		expect(samples[1].sample_name).toBe('sample2');
+		expect(experiment.experiment_name).toBe('experiment');
+		expect(experiment.path_reads).toBe('/data');
+		expect(experiment.global_p5_p7).toBe(false);
+	});
 });
